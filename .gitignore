@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # .csv files
 Data/*.csv
+
+# Old scripts from ForestPlot
+Old_ForestPlot_scripts/*.R
