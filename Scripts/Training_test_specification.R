@@ -72,7 +72,9 @@ for(set in 1:4){
   }
   
   # Write to .csv
-  write.csv(test, paste("Data/Output_data/test", set, ".csv", sep = ""))
-  write.csv(training, paste("Data/Output_data/training", set, ".csv", sep = ""))
+  write.csv(test, paste("Data/Output_data/test", set, ".csv", sep = ""),
+            row.names = F)
+  write.csv(training, paste("Data/Output_data/training", set, ".csv", sep = ""),
+            row.names = F)
   
 }
