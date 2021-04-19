@@ -61,5 +61,8 @@ output$dAICc <- output$AICc - min(output$AICc)
 # Order output by dAICc
 output <- output %>% arrange(dAICc)
 
+# Plot size effect
+size_effect(focals, output, focal_sps, model_str)
+
 # Plot PET effect
 PET_effect(focals, output, focal_sps, model_str)
