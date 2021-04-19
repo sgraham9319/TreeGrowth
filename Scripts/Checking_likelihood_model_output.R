@@ -1,5 +1,8 @@
 library(dplyr)
 
+# Source model fit plotting functions
+source("Functions/Lkhd_parameter_fit_plots.R")
+
 # Specify model structure, training set and focal sps
 model_str <- "no_comp"
 set <- 2
@@ -36,7 +39,8 @@ sing_sp <- sing_sp %>%
 # Extract annual growth of each focal individual
 focals <- sing_sp %>%
   group_by(tree_id) %>%
-  summarize(dbh = dbh[1], annual_growth = annual_growth[1])
+  summarize(dbh = dbh[1], annual_growth = annual_growth[1],
+            pet_dm = pet_dm[1])
 
 # Plot starting vs. optimized values
 plot(X0_opt ~ X0, data = output)
@@ -56,3 +60,6 @@ output$dAICc <- output$AICc - min(output$AICc)
 
 # Order output by dAICc
 output <- output %>% arrange(dAICc)
+
+# Plot PET effect
+PET_effect(focals, output, focal_sps, model_str)
