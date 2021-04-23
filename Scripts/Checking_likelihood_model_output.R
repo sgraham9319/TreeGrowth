@@ -4,17 +4,19 @@ library(dplyr)
 source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
-model_str <- "no_comp"
+model_str <- "no_comp_rand"
 set <- 2
-focal_sps <- "ABAM"
+focal_sps <- "TSHE"
 
 # Load model output
 output <- read.csv(paste("Data/Output_data/", model_str, set, "_", focal_sps,
                          ".csv", sep = ""))
 
 # Load training data
-training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-                   stringsAsFactors = F)
+#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
+#                   stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
 
 # Order training data by tree_id to avoid problems later
 training <- training %>% arrange(tree_id)
@@ -48,6 +50,9 @@ plot(Xb_opt ~ Xb, data = output)
 plot(gmax_opt ~ gmax, data = output)
 plot(pet_a_opt ~ pet_a, data = output)
 plot(pet_b_opt ~ pet_b, data = output)
+#plot(C_opt ~ C, data = output)
+#plot(alpha_opt ~ alpha, data = output)
+#plot(beta_opt ~ beta, data = output)
 
 # Calculate AICc for each model
 AICc_calc <- function(k, NLL, n){
@@ -62,7 +67,7 @@ output$dAICc <- output$AICc - min(output$AICc)
 output <- output %>% arrange(dAICc)
 
 # Plot size effect
-size_effect(focals, output, focal_sps, model_str)
+size_effect(sing_sp, output, focal_sps, model_str)
 
 # Plot PET effect
 PET_effect(focals, output, focal_sps, model_str)
