@@ -14,7 +14,12 @@ size_effect <- function(tree_dat, fits, species, mod_structure){
               pet_dm = pet_dm[1])
   
   # Calculate mean NCI for each model run (if NCI included in model)
-  if(grep("no", mod_structure) == 0){
+  if(length(grep("no", mod_structure)) == 0){
+    
+    # Define NCI function
+    nci <- function(neighbors, alpha, beta){
+      sum((neighbors$dbh_comp ^ alpha) / (neighbors$prox ^ beta))
+    }
     
     # Create function to calculate nci for each individual
     nci_test <- function(nbhd_data, alpha, beta){
@@ -41,12 +46,12 @@ size_effect <- function(tree_dat, fits, species, mod_structure){
        ylab = "Diameter growth (mm/y)", xlab = "DBH (dm)")
   
   # Define parameter fit plotting function
-  if(grep("no", mod_structure) == 1){
+  if(length(grep("no", mod_structure)) == 1){
     param_fit <- function(x){
       gmax * exp((-0.5) * ((log(x / X0) / Xb) ^ 2)) *
         exp((-0.5) * (((mean(focals$pet_dm) - pet_a) / pet_b) ^ 2))
     }
-  } else if(grep("eq", mod_structure) == 1){
+  } else if(length(grep("eq", mod_structure)) == 1){
     param_fit <- function(x){
       gmax * exp((-0.5) * ((log(x / X0) / Xb) ^ 2)) *
         exp((-0.5) * (((mean(focals$pet_dm) - pet_a) / pet_b) ^ 2)) *
@@ -61,7 +66,7 @@ size_effect <- function(tree_dat, fits, species, mod_structure){
     Xb <- fits$Xb_opt[i]
     pet_a <- fits$pet_a_opt[i]
     pet_b <- fits$pet_b_opt[i]
-    if(grep("no", mod_structure) == 0){
+    if(length(grep("no", mod_structure)) == 0){
       C <- fits$C_opt[i]
       nci_mean <- model_nci_means[i]
     }
@@ -114,7 +119,12 @@ PET_effect <- function(tree_dat, fits, species, mod_structure){
               pet_dm = pet_dm[1])
   
   # Calculate mean NCI for each model run (if NCI included in model)
-  if(grep("no", mod_structure) == 0){
+  if(length(grep("no", mod_structure)) == 0){
+    
+    # Define NCI function
+    nci <- function(neighbors, alpha, beta){
+      sum((neighbors$dbh_comp ^ alpha) / (neighbors$prox ^ beta))
+    }
     
     # Create function to calculate nci for each individual
     nci_test <- function(nbhd_data, alpha, beta){
@@ -141,12 +151,12 @@ PET_effect <- function(tree_dat, fits, species, mod_structure){
        ylab = "Diameter growth (mm/y)", xlab = "PET (dm)")
   
   # Define parameter fit plotting function
-  if(grep("no", mod_structure) == 1){
+  if(length(grep("no", mod_structure)) == 1){
     param_fit <- function(x){
       gmax * exp((-0.5) * ((log(mean(focals$dbh) / X0) / Xb) ^ 2)) *
         exp((-0.5) * (((x - pet_a) / pet_b) ^ 2))
     }
-  } else if(grep("eq", mod_structure) == 1){
+  } else if(length(grep("eq", mod_structure)) == 1){
     param_fit <- function(x){
       gmax * exp((-0.5) * ((log(mean(focals$dbh) / X0) / Xb) ^ 2)) *
         exp((-0.5) * (((x - pet_a) / pet_b) ^ 2)) *
@@ -161,7 +171,7 @@ PET_effect <- function(tree_dat, fits, species, mod_structure){
     Xb <- fits$Xb_opt[i]
     pet_a <- fits$pet_a_opt[i]
     pet_b <- fits$pet_b_opt[i]
-    if(grep("no", mod_structure) == 0){
+    if(length(grep("no", mod_structure)) == 0){
       C <- fits$C_opt[i]
       nci_mean <- model_nci_means[i]
     }
