@@ -5,8 +5,8 @@ source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
 model_str <- "eq_comp"
-set <- 2
-focal_sps <- "ABAM"
+set <- 4
+focal_sps <- "TSME"
 
 # Load model output
 output <- read.csv(paste("Data/Output_data/", model_str, set, "_", focal_sps,
@@ -69,8 +69,7 @@ output$dAICc <- output$AICc - min(output$AICc)
 output <- output %>% arrange(dAICc)
 
 # Plot size effect
-#size_effect(sing_sp, output, focal_sps, model_str)
 fitted_effect(sing_sp, output, focal_sps, model_str, effect = "size")
+
 # Plot PET effect
-#PET_effect(sing_sp, output, focal_sps, model_str)
 fitted_effect(sing_sp, output, focal_sps, model_str, effect = "pet")
