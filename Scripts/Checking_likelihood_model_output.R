@@ -4,9 +4,9 @@ library(dplyr)
 source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
-model_str <- "eq_comp"
-set <- 4
-focal_sps <- "TSME"
+model_str <- "int_comp"
+set <- 2
+focal_sps <- "ABAM"
 
 # Load model output
 output <- read.csv(paste("Data/Output_data/", model_str, set, "_", focal_sps,
@@ -53,8 +53,8 @@ plot(pet_b_opt ~ pet_b, data = output)
 plot(C_opt ~ C, data = output)
 plot(alpha_opt ~ alpha, data = output)
 plot(beta_opt ~ beta, data = output)
-#plot(intra_opt ~ intra, data = output)
-#plot(inter_opt ~ inter, data = output)
+plot(intra_opt ~ intra, data = output)
+plot(inter_opt ~ inter, data = output)
 
 # Calculate AICc for each model
 AICc_calc <- function(k, NLL, n){
