@@ -4,7 +4,7 @@ library(dplyr)
 source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
-model_str <- "int_comp"
+model_str <- "eq_comp"
 set <- 2
 focal_sps <- "ABAM"
 
