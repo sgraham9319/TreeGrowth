@@ -4,8 +4,8 @@ library(dplyr)
 source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
-model_str <- "eq_comp"
-set <- 2
+model_str <- "eq_comp_rand"
+set <- 1
 focal_sps <- "ABAM"
 
 # Load model output
@@ -13,10 +13,10 @@ output <- read.csv(paste("Data/Output_data/", model_str, set, "_", focal_sps,
                          ".csv", sep = ""))
 
 # Load training data
-training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-                   stringsAsFactors = F)
-#training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
-#                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
+#                   stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
 
 # Order training data by tree_id to avoid problems later
 training <- training %>% arrange(tree_id)
@@ -53,8 +53,8 @@ plot(pet_b_opt ~ pet_b, data = output)
 plot(C_opt ~ C, data = output)
 plot(alpha_opt ~ alpha, data = output)
 plot(beta_opt ~ beta, data = output)
-plot(intra_opt ~ intra, data = output)
-plot(inter_opt ~ inter, data = output)
+#plot(intra_opt ~ intra, data = output)
+#plot(inter_opt ~ inter, data = output)
 
 # Calculate AICc for each model
 AICc_calc <- function(k, NLL, n){
@@ -73,3 +73,4 @@ fitted_effect(sing_sp, output, focal_sps, model_str, effect = "size")
 
 # Plot PET effect
 fitted_effect(sing_sp, output, focal_sps, model_str, effect = "pet")
+
