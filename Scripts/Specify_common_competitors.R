@@ -37,11 +37,11 @@ for(focal_sps in species){
   # Calculate mean number interactions for each competitor species
   mean_ints <- apply(sing_sp, 2, mean, na.rm = T)
   
-  # Create vector of rare competitors
-  rare_sps <- names(which(mean_ints < 100))
+  # Create vector of common competitors
+  comm_sps <- names(which(mean_ints >= 100))
   
   # Add to output list
-  output[[focal_sps]] <- rare_sps
+  output[[focal_sps]] <- comm_sps
   
 }
 
@@ -49,4 +49,4 @@ for(focal_sps in species){
 output <- sapply(output, '[', seq(max(lengths(output))))
 
 # Save to csv
-write.csv(output, "Data/Output_data/rare_comps.csv", row.names = F)
+write.csv(output, "Data/Output_data/common_comps.csv", row.names = F)
