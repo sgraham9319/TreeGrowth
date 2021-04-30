@@ -3,7 +3,7 @@ library(parallel)
 
 # Specify training set and focal species
 set <- 1
-focal_sps <- "TSME"
+focal_sps <- "TSHE"
 
 # Load common competitors data and extract for focal species
 #comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
@@ -47,18 +47,25 @@ focals <- sing_sp %>%
   summarize(dbh = dbh[1], annual_growth = annual_growth[1])
 
 # Define NCI function
-nci <- function(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4){
+nci <- function(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4, lmd5,
+                lmd6, lmd7, lmd8, lmd9){
   raw <- (neighbors$dbh_comp ^ alpha) / (neighbors$prox ^ beta)
   nci1 <- raw[which(neighbors$sps_comp == comps[1])] * lmd1
   nci2 <- raw[which(neighbors$sps_comp == comps[2])] * lmd2
   nci3 <- raw[which(neighbors$sps_comp == comps[3])] * lmd3
   nci4 <- raw[which(neighbors$sps_comp == comps[4])] * lmd4
-  return(sum(c(nci1, nci2, nci3, nci4)))
+  nci5 <- raw[which(neighbors$sps_comp == comps[5])] * lmd5
+  nci6 <- raw[which(neighbors$sps_comp == comps[6])] * lmd6
+  nci7 <- raw[which(neighbors$sps_comp == comps[7])] * lmd7
+  nci8 <- raw[which(neighbors$sps_comp == comps[8])] * lmd8
+  nci9 <- raw[which(neighbors$sps_comp == comps[9])] * lmd9
+  return(sum(c(nci1, nci2, nci3, nci4, nci5, nci6, nci7, nci8, nci9)))
 }
 
 # Create growth prediction function
 growth_pred <- function(nbhd_data, X0, Xb, gmax, pet_a, pet_b,
-                        C, alpha, beta, lmd1, lmd2, lmd3, lmd4){
+                        C, alpha, beta, lmd1, lmd2, lmd3, lmd4,
+                        lmd5, lmd6, lmd7, lmd8, lmd9){
   
   # Get list of focal tree ids
   ids <- unique(nbhd_data$tree_id)
@@ -77,7 +84,8 @@ growth_pred <- function(nbhd_data, X0, Xb, gmax, pet_a, pet_b,
     pred_grow[id] <- gmax *
       exp((-0.5) * ((log(neighbors$dbh[1] / X0) / Xb) ^ 2)) *
       exp((-0.5) * (((neighbors$pet_dm[1] - pet_a) / pet_b) ^ 2)) *
-      exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4))
+      exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
+                   lmd5, lmd6, lmd7, lmd8, lmd9))
     
   }
   
@@ -103,7 +111,12 @@ ss_comp_NLL <- function(par){
   lmd2 <- par[10]
   lmd3 <- par[11]
   lmd4 <- par[12]
-  sigma <- par[13]
+  lmd5 <- par[13]
+  lmd6 <- par[14]
+  lmd7 <- par[15]
+  lmd8 <- par[16]
+  lmd9 <- par[17]
+  sigma <- par[18]
   
   # Prevent parameter values from becoming nonsensical
   if(sigma < 0) {return(Inf)}
@@ -119,10 +132,15 @@ ss_comp_NLL <- function(par){
   if(lmd2 < 0 | lmd2 > 1) {return(Inf)}
   if(lmd3 < 0 | lmd3 > 1) {return(Inf)}
   if(lmd4 < 0 | lmd4 > 1) {return(Inf)}
+  if(lmd5 < 0 | lmd5 > 1) {return(Inf)}
+  if(lmd6 < 0 | lmd6 > 1) {return(Inf)}
+  if(lmd7 < 0 | lmd7 > 1) {return(Inf)}
+  if(lmd8 < 0 | lmd8 > 1) {return(Inf)}
+  if(lmd9 < 0 | lmd9 > 1) {return(Inf)}
   
   # Make growth predictions
   pred <- growth_pred(sing_sp, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta,
-                      lmd1, lmd2, lmd3, lmd4)
+                      lmd1, lmd2, lmd3, lmd4, lmd5, lmd6, lmd7, lmd8, lmd9)
   
   # Join predictions to observations by tree_id
   combined <- left_join(focals, pred, by = c("tree_id" = "ids"))
@@ -145,12 +163,15 @@ pet_b <- 2
 C <- 1
 alpha <- 1
 beta <- 1
-lmd1 <- 0.5; lmd2 <- 0.5; lmd3 <- 0.5; lmd4 <- 0.5
+lmd1 <- 0.5; lmd2 <- 0.5; lmd3 <- 0.5; lmd4 <- 0.5; lmd5 <- 0.5
+lmd6 <- 0.5; lmd7 <- 0.5; lmd8 <- 0.5; lmd9 <- 0.5
 sigma <- 5
 starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
                              pet_b = pet_b, C = C, alpha = alpha,
                              beta = beta, lmd1 = lmd1, lmd2 = lmd2,
-                             lmd3 = lmd3, lmd4 = lmd4, sigma = sigma)
+                             lmd3 = lmd3, lmd4 = lmd4, lmd5 = lmd5,
+                             lmd6 = lmd6, lmd7 = lmd7, lmd8 = lmd8,
+                             lmd9 = lmd9, sigma = sigma)
 starting_vals <- bind_rows(starting_vals, starting_vals, starting_vals)
 
 # Try optimizing one time for TSME - takes about 5 minutes
@@ -168,7 +189,8 @@ ss_comp_opt <- function(par_list){
                 par_list[1,4], par_list[1,5], par_list[1,6],
                 par_list[1,7], par_list[1,8], par_list[1,9],
                 par_list[1,10], par_list[1,11], par_list[1,12],
-                par_list[1,13]),
+                par_list[1,13], par_list[1,14], par_list[1,15],
+                par_list[1,16], par_list[1,17], par_list[1,18]),
         fn = ss_comp_NLL, method = "SANN")
   
 }
