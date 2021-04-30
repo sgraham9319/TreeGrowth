@@ -45,3 +45,8 @@ for(focal_sps in species){
   
 }
 
+# Convert output list to data frame
+output <- sapply(output, '[', seq(max(lengths(output))))
+
+# Save to csv
+write.csv(output, "Data/Output_data/rare_comps.csv", row.names = F)
