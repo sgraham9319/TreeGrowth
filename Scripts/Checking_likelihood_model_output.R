@@ -38,6 +38,15 @@ sing_sp <- sing_sp %>%
   ) %>%
   select(-pet_mm)
 
+# If a single species comp model, change rare competitors to OTHR
+if(length(grep("ss", model_str)) == 1){
+  comm_comp <- read.csv("Data/Output_data/common_comps.csv",
+                        stringsAsFactors = F)
+  comm_comp <- comm_comp[, focal_sps]
+  sing_sp <- sing_sp %>%
+    mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
+}
+
 # Extract annual growth of each focal individual
 focals <- sing_sp %>%
   group_by(tree_id) %>%
