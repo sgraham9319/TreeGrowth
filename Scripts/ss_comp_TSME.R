@@ -5,11 +5,11 @@ library(parallel)
 set <- 1
 focal_sps <- "TSME"
 
-# Load rare competitors data and extract for focal species
-rare_comp <- read.csv("Data/Output_data/rare_comps.csv", stringsAsFactors = F)
-#rare_comp <- read.csv("/gscratch/stf/sgraham3/data/rare_comps.csv",
+# Load common competitors data and extract for focal species
+comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
+#comm_comp <- read.csv("/gscratch/stf/sgraham3/data/common_comps.csv",
 #                      stringsAsFactors = F)
-rare_comp <- rare_comp[, focal_sps]
+comm_comp <- comm_comp[, focal_sps]
 
 # Load training data
 training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
@@ -36,7 +36,7 @@ sing_sp <- sing_sp %>%
 
 # Change rare competitors to OTHR
 sing_sp <- sing_sp %>%
-  mutate(sps_comp = if_else(sps_comp %in% rare_comp, "OTHR", sps_comp))
+  mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
 
 # Create vector of competitor species
 comps <- sort(unique(sing_sp$sps_comp))
@@ -154,8 +154,8 @@ starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
 starting_vals <- bind_rows(starting_vals, starting_vals, starting_vals)
 
 # Try optimizing one time for TSME - takes about 5 minutes
-par <- as.vector(starting_vals[1,])
-fit <- optim(par, ss_comp_NLL, method = "SANN")
+#par <- as.vector(starting_vals[1,])
+#fit <- optim(par, ss_comp_NLL, method = "SANN")
 
 # Convert starting values data frame to list format
 start_vals <- split(starting_vals, 1:nrow(starting_vals))

@@ -5,11 +5,11 @@ library(parallel)
 set <- 1
 focal_sps <- "TSME"
 
-# Load rare competitors data and extract for focal species
-rare_comp <- read.csv("Data/Output_data/rare_comps.csv", stringsAsFactors = F)
-#rare_comp <- read.csv("/gscratch/stf/sgraham3/data/rare_comps.csv",
+# Load common competitors data and extract for focal species
+comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
+#comm_comp <- read.csv("/gscratch/stf/sgraham3/data/common_comps.csv",
 #                      stringsAsFactors = F)
-rare_comp <- rare_comp[, focal_sps]
+comm_comp <- comm_comp[, focal_sps]
 
 # Load training data
 training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
@@ -36,7 +36,7 @@ sing_sp <- sing_sp %>%
 
 # Change rare competitors to OTHR
 sing_sp <- sing_sp %>%
-  mutate(sps_comp = if_else(sps_comp %in% rare_comp, "OTHR", sps_comp))
+  mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
 
 # Create vector of competitor species
 comps <- sort(unique(sing_sp$sps_comp))
