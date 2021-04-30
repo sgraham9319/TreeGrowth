@@ -5,7 +5,7 @@ source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
 model_str <- "eq_comp_rand"
-set <- 1
+set <- 2
 focal_sps <- "ABAM"
 
 # Load model output
