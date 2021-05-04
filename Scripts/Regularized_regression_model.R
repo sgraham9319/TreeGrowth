@@ -34,3 +34,16 @@ set.seed(100)
 mod_res <- growth_model(train, "size_corr_growth", focal_sps,
                         iterations = 100)
 
+# Extract coefficients tabla
+cffts <- mod_res$mod_coef
+
+# Define function to calculate species interaction coefficients
+rescale <- function(x){
+  (sum(x < 0) - sum(x > 0) + 100) / 200
+}
+
+# Apply to competitor species columns
+apply(cffts[, grep("sps_comp", names(cffts))], 2, rescale)
+
+# Apply to density columns
+apply(cffts[, grep("density", names(cffts))], 2, rescale)
