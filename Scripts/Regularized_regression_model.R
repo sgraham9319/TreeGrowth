@@ -30,6 +30,7 @@ train <- train %>%
   mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
 
 # Run regularized regression model
+set.seed(100)
 mod_res <- growth_model(train, "size_corr_growth", focal_sps,
                         iterations = 100)
 
