@@ -41,6 +41,7 @@ vignettes/*.pdf
 # .csv files
 Data/Raw_data/*.csv
 Data/Output_data/*.csv
+Data/Figure_data/*.csv
 
 # Old scripts from ForestPlot
 Old_ForestPlot_scripts/*.R
