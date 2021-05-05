@@ -9,6 +9,7 @@ train <- read.csv("Data/Output_data/training1.csv", stringsAsFactors = F)
 
 # Remove unneeded columns
 train <- train %>%
+  filter(species == focal_sps) %>%
   select(tree_id, species, sps_comp, dbh_comp, prox, all_density, ABAM_density,
          ABPR_density, CANO_density, PSME_density, TABR_density, THPL_density,
          TSHE_density, ABLA_density, TSME_density, ALSI_density, ALVI_density,
@@ -25,9 +26,15 @@ train <- train %>%
 comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
 comm_comp <- comm_comp[, focal_sps]
 
-# Convert rare competitors to OTHR
+# Get rare competitor density columns
+rare_dens <- setdiff(names(train)[grep("density", names(train))],
+                     c(paste(comm_comp, "density", sep = "_"), "all_density"))
+
+# Convert rare competitors to OTHR and remove unneeded densities
 train <- train %>%
-  mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
+  mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"),
+         OTHR_density = apply(train %>% select(rare_dens), 1, sum)) %>%
+  select(-rare_dens)
 
 # Run regularized regression model
 set.seed(100)
