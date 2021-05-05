@@ -39,8 +39,11 @@ size_effect_comp <- function(fit_data, species, cols){
   
   # Create plot
   ggplot(plot_format, aes(x = x, y = y, color = training)) +
+    theme_classic() +
     geom_line(lwd = 1) +
     scale_color_manual(values = cols) +
-    labs(title = species, x = "Diameter at breast height (dm)",
-         y = "Annual growth (mm/year)") 
+    labs(title = species, x = "Diameter at breast height (cm)",
+         y = "Annual diameter growth (mm/year)") +
+    scale_x_continuous(breaks = seq(0, 30, 5),
+                       labels = seq(0, 300, 50))
 }

@@ -6,7 +6,7 @@ source("Functions/size_effect_comp.R")
 source("Functions/training_comparison.R")
 
 # Calculate comparison
-comparison <- training_comparison(focal_sps = "ABAM",
+comparison <- training_comparison(focal_sps = "TSHE",
                     model_strs = c("no_comp", "eq_comp", "int_comp", "ss_comp"),
                     sets = 1:4)
 
