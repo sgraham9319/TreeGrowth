@@ -121,6 +121,13 @@ training_comparison <- function(focal_sps, model_strs, sets){
                                           top_mod$inter_opt))
       } else if(length(grep("ss", mod)) == 1){
         
+        # Convert rare competitor species to OTHR
+        comm_comp <- read.csv("Data/Output_data/common_comps.csv",
+                              stringsAsFactors = F)
+        comm_comp <- comm_comp[, focal_sps]
+        sing_sp <- sing_sp %>%
+          mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
+        
         # Create vector of competitor species
         comps <- sort(unique(sing_sp$sps_comp))
         
