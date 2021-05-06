@@ -112,7 +112,10 @@ colors <- paletteer_c(palette = "pals::coolwarm", n = n_colors)
 rank <- cut(c(all_int, 0, 1), n_colors)
 
 # Change plot margins
-par(mar = c(2, 2, 2, 4))
+par(mar = c(2, 2, 2, 2))
+
+# Create space for legend
+layout(matrix(1:2, ncol = 2), width = c(5, 1), height = c(1, 1))
 
 # Create empty plot
 plot.new()
@@ -126,3 +129,9 @@ mtext(text = "Training set", side = 1, line = 1)
 mtext(text = comps, side = 2,
       at = rev(seq(rect_ht, block * length(comps) - (rect_ht + separator),
                    block)), las = 1, cex = 0.8)
+
+# Create and add legend
+par(mar = c(2, 0, 2, 0))
+plot.new()
+legend_image <- as.raster(matrix(colors, ncol = 1))
+rasterImage(legend_image, 0, 0, 0.3, 1)
