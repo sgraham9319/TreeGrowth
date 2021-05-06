@@ -1,15 +1,20 @@
 library(tidyverse)
 library(ForestPlot)
 
+# NOTE: this script takes a while to run (about 15 minutes on my laptop), but
+# for checking purposes it can be run much faster if you reduce the number
+# of focal species and training sets provided on lines 16 and 17 (the number
+# of times the for loop runs is the product of the lengths of the focal_sps
+# and train_sets vectors)
+
 # Define function to calculate species interaction coefficients
 rescale <- function(x){
   (sum(x < 0) - sum(x > 0) + 100) / 200
 }
 
 # Create vectors of focal species and training sets
-#focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
-focal_sps <- c("THPL", "TSME")
-train_sets <- 1:2
+focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
+train_sets <- 1:4
 
 # Create matrix to hold R squared values
 rsq_vals <- matrix(NA, ncol = 2,
@@ -78,11 +83,13 @@ for(set in train_sets){
     # Convert rare competitors to OTHR and remove unneeded densities
     sing_sp <- sing_sp %>%
       mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"),
-             OTHR_density = apply(sing_sp %>% select(rare_dens), 1, sum)) %>%
+             OTHR_density = apply(sing_sp %>% select(all_of(rare_dens)), 1,
+                                  sum)) %>%
       select(-rare_dens)
     ss_test <- ss_test %>%
       mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"),
-             OTHR_density = apply(ss_test %>% select(rare_dens), 1, sum)) %>%
+             OTHR_density = apply(ss_test %>% select(all_of(rare_dens)), 1,
+                                  sum)) %>%
       select(-rare_dens)
     
     # Run regularized regression model
@@ -136,4 +143,4 @@ for(i in 1:length(focal_sps)){
 id_cols <- data.frame(species = rep(focal_sps, each = length(train_sets)),
                       training = rep(train_sets, times = length(focal_sps)))
 int_coef <- cbind(id_cols, int_coef)
-write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv")
+write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv", row.names = F)

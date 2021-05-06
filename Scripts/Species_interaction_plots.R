@@ -4,11 +4,15 @@ library(dplyr)
 # Define coordinates of rectangles
 x_left <- rep(seq(0, 0.75, 0.25), times = 8)
 x_right <- rep(seq(0.25, 1, 0.25), times = 8)
-y_bottom <- rep(seq(0, 0.875, 0.125), each = 4)
-y_top <- rep(seq(0.125, 1, 0.125), each = 4)
+y_bottom <- rep(rev(seq(0, 0.9375, 0.0625)), each = 4)
+y_top <- rep(rev(seq(0.0625, 1, 0.0625)), each = 4)
 
 # Define interaction coefficients
 int_coef <- rep(seq(0, 0.9, 0.3), times = 8)
+# Intersperse the RR coefficients using:
+#a <- c(1,2,3)
+#b <- c(11,12,13)
+#c <- as.vector(c(rbind(a,b)))
 
 # Create colors
 n_colors <- 20
@@ -43,6 +47,7 @@ AICc_calc <- function(k, NLL, n){
 # Specify focal species
 focal_sps <- "ABAM"
 
+# Loop through training sets
 for(set in 1:4){
   
   # Load training data
