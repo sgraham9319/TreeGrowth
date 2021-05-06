@@ -4,8 +4,8 @@ library(dplyr)
 source("Functions/Lkhd_parameter_fit_plots.R")
 
 # Specify model structure, training set and focal sps
-model_str <- "ss_comp"
-set <- 4
+model_str <- "ss_comp_rand"
+set <- 2
 focal_sps <- "ABAM"
 
 # Load model output
@@ -13,10 +13,10 @@ output <- read.csv(paste("Data/Output_data/", model_str, set, "_", focal_sps,
                          ".csv", sep = ""))
 
 # Load training data
-training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-                   stringsAsFactors = F)
-#training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
-#                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
+#                   stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
 
 # Order training data by tree_id to avoid problems later
 training <- training %>% arrange(tree_id)
