@@ -1,5 +1,5 @@
 
-size_effect_comp <- function(fit_data, species, cols){
+size_effect_comp <- function(fit_data, species, cols, train_type){
   
   # Define no competition size effect function
   nc_fit <- function(x, gmax, X0, Xb, mean_pet, pet_a, pet_b){
@@ -42,7 +42,8 @@ size_effect_comp <- function(fit_data, species, cols){
     theme_classic() +
     geom_line(lwd = 1) +
     scale_color_manual(values = cols) +
-    labs(title = species, x = "Diameter at breast height (cm)",
+    labs(title = paste(species, train_type, sep = " - "),
+         x = "Diameter at breast height (cm)",
          y = "Annual diameter growth (mm/year)") +
     scale_x_continuous(breaks = seq(0, 30, 5),
                        labels = seq(0, 300, 50))

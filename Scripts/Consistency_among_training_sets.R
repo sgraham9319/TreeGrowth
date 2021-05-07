@@ -7,9 +7,9 @@ source("Functions/training_comparison.R")
 source("Functions/lkhd_model_selection.R")
 
 # Calculate comparison
-comparison <- training_comparison(focal_sps = "TSHE",
+comparison <- training_comparison(focal_sps = "TSME",
                     model_strs = c("no_comp", "eq_comp", "int_comp", "ss_comp"),
-                    sets = 1:4)
+                    sets = 1:4, train_type = "random")
 
 # Plot comparison
 comparison$comp_plot

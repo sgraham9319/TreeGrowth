@@ -1,6 +1,6 @@
 
 
-training_comparison <- function(focal_sps, model_strs, sets){
+training_comparison <- function(focal_sps, model_strs, sets, train_type){
   
   # Define AICc function
   AICc_calc <- function(k, NLL, n){
@@ -18,8 +18,13 @@ training_comparison <- function(focal_sps, model_strs, sets){
   for(train in sets){
     
     # Load training data
-    training <- read.csv(paste("Data/Output_data/training", train, ".csv",
-                               sep = ""), stringsAsFactors = F)
+    if(train_type == "regular"){
+      training <- read.csv(paste("Data/Output_data/training", train,
+                                 ".csv", sep = ""), stringsAsFactors = F)
+    } else if(train_type == "random"){
+      training <- read.csv(paste("Data/Output_data/rand_training", train,
+                                 ".csv", sep = ""), stringsAsFactors = F)
+    }
     
     # Subset to focal species and remove unneeded columns
     sing_sp <- training %>%
@@ -47,8 +52,13 @@ training_comparison <- function(focal_sps, model_strs, sets){
     for(mod in model_strs){
       
       # Load model output
-      output <- read.csv(paste("Data/Output_data/", mod, train, "_", focal_sps,
-                               ".csv", sep = ""))
+      if(train_type == "regular"){
+        output <- read.csv(paste("Data/Output_data/", mod, train, "_",
+                                 focal_sps, ".csv", sep = ""))
+      } else if(train_type == "random"){
+        output <- read.csv(paste("Data/Output_data/", mod, "_rand", train, "_",
+                                 focal_sps, ".csv", sep = ""))
+      }
       
       # Calculate AICc for each model
       output$AICc <- AICc_calc(length(grep("_opt", names(output))),
@@ -313,7 +323,8 @@ training_comparison <- function(focal_sps, model_strs, sets){
   
   # Call size effect function on combined data
   comp_plot <- size_effect_comp(best_model_per_training, focal_sps,
-                                cols = c("red", "blue", "gold", "green"))
+                                cols = c("red", "blue", "gold", "green"),
+                                train_type = train_type)
   
   # Combine result
   result <- list(best_models = best_models, comp_plot = comp_plot)
