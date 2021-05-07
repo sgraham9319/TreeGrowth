@@ -1,24 +1,18 @@
 
 
-lkhd_model_select <- function(training_type = "separated"){
+lkhd_model_select <- function(training_type = "regular"){
   
   # Define AICc function
   AICc_calc <- function(k, NLL, n){
     (2 * (k + NLL)) + ((2 * ((k^2) + k)) / (n - k - 1))
   }
   
-  # Create vectors of focal specis and training sets
+  # Create vectors of focal species and training sets
   focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
   train_sets <- 1:4
   
   # Create vector of model structures
-  if(training_type == "separated"){
-    model_strs <- c("no_comp", "eq_comp", "int_comp", "ss_comp")
-  } else if(training_type == "random"){
-    model_strs <- c("no_comp_rand", "eq_comp_rand", "int_comp_rand",
-                    "ss_comp_rand")
-  }
-  
+  model_strs <- c("no_comp", "eq_comp", "int_comp", "ss_comp")
   
   # Create matrix to store AIC output
   aic_table <- matrix(NA, ncol = length(model_strs),
@@ -28,8 +22,13 @@ lkhd_model_select <- function(training_type = "separated"){
   for(set in train_sets){
     
     # Load training data
-    training <- read.csv(paste("Data/Output_data/training", set, ".csv",
-                               sep = ""), stringsAsFactors = F)
+    if(training_type == "regular"){
+      training <- read.csv(paste("Data/Output_data/training", set, ".csv",
+                                 sep = ""), stringsAsFactors = F)
+    } else if(training_type == "random"){
+      training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                                 sep = ""), stringsAsFactors = F)
+    }
     
     # Loop through focal species
     for(sps in 1:length(focal_sps)){
@@ -48,8 +47,13 @@ lkhd_model_select <- function(training_type = "separated"){
       for(i in 1:length(model_strs)){
         
         # Load fitted models
-        output <- read.csv(paste("Data/Output_data/", model_strs[i],  set, "_",
-                                 focal_sps[sps], ".csv", sep = ""))
+        if(training_type == "regular"){
+          output <- read.csv(paste("Data/Output_data/", model_strs[i],
+                                   set, "_", focal_sps[sps], ".csv", sep = ""))
+        } else if(training_type == "random"){
+          output <- read.csv(paste("Data/Output_data/", model_strs[i], "_rand",
+                                   set, "_", focal_sps[sps], ".csv", sep = ""))
+        }
         
         # Calculate AICc for each model
         output$AICc <- AICc_calc(length(grep("_opt", names(output))),
