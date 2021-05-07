@@ -33,11 +33,15 @@ for(set in train_sets){
   
   # Load training data
   train <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-                    stringsAsFactors = F)
+                   stringsAsFactors = F)
+  #train <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+  #                        sep = ""), stringsAsFactors = F)
   
   # Load test data
   test <- read.csv(paste("Data/Output_data/test", set, ".csv", sep = ""),
                    stringsAsFactors = F)
+  #test <- read.csv(paste("Data/Output_data/rand_test", set, ".csv", sep = ""),
+  #                 stringsAsFactors = F)
   
   # Remove unneeded columns from training and test
   train <- train %>%
@@ -125,6 +129,7 @@ rsq_vals <- rsq_vals %>%
   rename(train_r2 = V1, test_r2 = V2) %>%
   select(species, training, train_r2, test_r2)
 write.csv(rsq_vals, "Data/Figure_data/RR_r2.csv", row.names = F)
+#write.csv(rsq_vals, "Data/Figure_data/RR_r2_rand.csv", row.names = F)
 
 # Format and save coefficient tables
 for(i in 1:length(focal_sps)){
@@ -133,6 +138,8 @@ for(i in 1:length(focal_sps)){
   names(coef_tab) <- train_sets
   write.csv(coef_tab, paste("Data/Figure_data/RR_coef_", focal_sps[i],
                             ".csv", sep = ""))
+  #write.csv(coef_tab, paste("Data/Figure_data/RR_coef_rand_", focal_sps[i],
+  #                          ".csv", sep = ""))
 }
 
 # Format and save species interaction coefficients
@@ -144,3 +151,4 @@ id_cols <- data.frame(species = rep(focal_sps, each = length(train_sets)),
                       training = rep(train_sets, times = length(focal_sps)))
 int_coef <- cbind(id_cols, int_coef)
 write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv", row.names = F)
+#write.csv(int_coef, "Data/Figure_data/RR_sps_ints_rand.csv", row.names = F)
