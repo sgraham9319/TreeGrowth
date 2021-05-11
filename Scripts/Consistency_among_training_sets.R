@@ -6,6 +6,7 @@ source("Functions/size_effect_comp.R")
 source("Functions/training_comparison.R")
 source("Functions/lkhd_model_selection.R")
 source("Functions/quantify_lkhd_fit.R")
+source("Functions/r2_figure.R")
 
 # Calculate comparison
 comparison <- training_comparison(focal_sps = "TSME",
@@ -27,6 +28,7 @@ lkhd_table_rand <- lkhd_model_select(training_type = "random")
 #write.csv(lkhd_table_rand, "Figures/lkhd_model_selection_rand_train.csv",
 #          row.names = F)
 
+# Calculate likelihood r2 values
 lkhd_r2 <- quantify_lkhd_fit(train_type = "regular")
 lkhd_r2_rand <- quantify_lkhd_fit(train_type = "random")
 
@@ -51,4 +53,10 @@ r2_rand_table <- lkhd_r2_rand %>%
 # Save r2 tables
 #write.csv(r2_table, "Figures/train_test_fit.csv", row.names = F)
 #write.csv(r2_rand_table, "Figures/train_test_fit_rand.csv", row.names = F)
+
+# Make R2 figures
+r2 <- read.csv("Figures/train_test_fit.csv", stringsAsFactors = F)
+r2_rand <- read.csv("Figures/train_test_fit_rand.csv", stringsAsFactors = F)
+r2_figure(r2, "train_test_fit")
+r2_figure(r2_rand, "train_test_fit_rand")
 
