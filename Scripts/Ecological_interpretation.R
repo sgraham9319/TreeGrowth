@@ -83,15 +83,27 @@ write.csv(compid_rd, "Figures/comp_id_influence_rand.csv", row.names = F)
 # 3. Is conspecific or heterospecific competition strongest?
 #===========================================================
 
-# Load regularized regression results
-rr <- read.csv("Data/Figure_data/inter_str.csv")
-rr <- read.csv("Data/Figure_data/intra_str.csv")
-rr_rd <- read.csv("Data/Figure_data/inter_str_rand.csv")
-rr_rd <- read.csv("Data/Figure_data/intra_str_rand.csv")
+# Create likelihood part of table 
+lkhd_intra <- intra_vs_inter_lkhd("regular")
+lkhd_intra_rd <- intra_vs_inter_lkhd("random")
 
-# Create output tables for regular and random training sets
-con_het <- basic_table
-con_het_rd <- basic_table
+# Load regularized regression results
+rr_het <- read.csv("Data/Figure_data/inter_str.csv")
+rr_con <- read.csv("Data/Figure_data/intra_str.csv")
+rr_het_rd <- read.csv("Data/Figure_data/inter_str_rand.csv")
+rr_con_rd <- read.csv("Data/Figure_data/intra_str_rand.csv")
+
+# Calculate regularized regression part of table
+rr_intra <- cbind(rr_het[, 1], rr_het[, 2:5] - rr_con[, 2:5])
+names(rr_intra) <- c("species", paste("RR", 1:4, sep = ""))
+rr_intra_rd <- cbind(rr_het_rd[, 1], rr_het_rd[, 2:5] - rr_con_rd[, 2:5])
+names(rr_intra_rd) <- c("species", paste("RR", 1:4, sep = ""))
+
+# Combine likelihood and regularized regression data
+intra <- lkhd_intra %>%
+  left_join(rr_intra, by = "species")
+intra_rd <- lkhd_intra_rd %>%
+  left_join(rr_intra_rd, by = "species")
 
 #================================================
 # 4. Which species are the strongest competitors?
