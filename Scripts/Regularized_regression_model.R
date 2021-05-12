@@ -13,12 +13,19 @@ rescale <- function(x){
 }
 
 # Create vectors of focal species and training sets
-focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
-train_sets <- 1:4
+#focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
+focal_sps <- c("THPL", "TSME")
+train_sets <- 1:2
 
 # Create matrix to hold R squared values
 rsq_vals <- matrix(NA, ncol = 2,
                    nrow = length(focal_sps) * length(train_sets))
+
+# Create matrices to hold ecological interpretation results
+nbhd_inf <- matrix(NA, ncol = length(train_sets), nrow = length(focal_sps))
+comp_id_inf <- nbhd_inf
+inter_str <- nbhd_inf
+intra_str <- nbhd_inf
 
 # Create list to store model coefficients
 coef_tables <- vector(mode = "list", length = length(focal_sps))
@@ -89,12 +96,12 @@ for(set in train_sets){
       mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"),
              OTHR_density = apply(sing_sp %>% select(all_of(rare_dens)), 1,
                                   sum)) %>%
-      select(-rare_dens)
+      select(-all_of(rare_dens))
     ss_test <- ss_test %>%
       mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"),
              OTHR_density = apply(ss_test %>% select(all_of(rare_dens)), 1,
                                   sum)) %>%
-      select(-rare_dens)
+      select(-all_of(rare_dens))
     
     # Run regularized regression model
     set.seed(100)
@@ -118,6 +125,29 @@ for(set in train_sets){
       sps_int[[focal_sps[i]]] <- rbind(sps_int[[focal_sps[i]]], apply(
         mod$mod_coef[, grep("sps_comp", names(mod$mod_coef))], 2, rescale))
     }
+    
+    # Subset coefficients table for other ecological interpretations
+    mod_coef_sps_dens <- mod$mod_coef %>%
+      select(c(grep("sps_comp", names(mod$mod_coef)),
+               grep("dens", names(mod$mod_coef)),
+               intra))
+    
+    # Record number of models where neighborhood matters
+    nbhd_inf[i, set] <- sum(apply(mod_coef_sps_dens, 1, sum) != 0)
+    
+    # Further subset to only species identity variables
+    mod_coef_sps <- mod_coef_sps_dens %>%
+      select(-c(grep("dens", names(mod_coef_sps_dens))))
+    
+    # Record number of models where neighbor species identity matters
+    comp_id_inf[i, set] <- sum(apply(mod_coef_sps, 1, sum) != 0)
+    
+    # Record number of models where interspecific competition stronger
+    inter_str[i, set] <- sum(mod_coef_sps$intra > 0)
+    
+    # Record number of models where intraspecific competition stronger
+    intra_str[i, set] <- sum(mod_coef_sps$intra < 0)
+    
   }
 }
 
