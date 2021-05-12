@@ -52,11 +52,32 @@ write.csv(nbhd_rd, "Figures/nbhd_influence_rand.csv", row.names = F)
 # 2. Does species identity of neighbors influence tree growth?
 #=============================================================
 
+# Create likelihood parts of results tables
+lkhd_compid <- best_strs %>%
+  mutate(compid = if_else(str %in% c("int_comp", "ss_comp"), "Yes", "No")) %>%
+  select(-str) %>%
+  pivot_wider(names_from = training_set, values_from = compid)
+lkhd_compid_rd <- best_strs_rd %>%
+  mutate(compid = if_else(str %in% c("int_comp", "ss_comp"), "Yes", "No")) %>%
+  select(-str) %>%
+  pivot_wider(names_from = training_set, values_from = compid)
+
 # Load regularized regression results
-rr <- read.csv("Data/Figure_data/comp_id_inf.csv")
-rr_rd <- read.csv("Data/Figure_data/comp_id_inf_rand.csv")
+rr_compid <- read.csv("Data/Figure_data/comp_id_inf.csv")
+rr_compid_rd <- read.csv("Data/Figure_data/comp_id_inf_rand.csv")
 
+# Combine likelihood and regularized regression data
+compid <- lkhd_compid %>%
+  left_join(rr_compid, by = c("focal_sps" = "species"))
+names(compid)[2:9] <- c(paste("L", 1:4, sep = ""), paste("RR", 1:4, sep = "")) 
+compid_rd <- lkhd_compid_rd %>%
+  left_join(rr_compid_rd, by = c("focal_sps" = "species"))
+names(compid_rd)[2:9] <- c(paste("L", 1:4, sep = ""),
+                           paste("RR", 1:4, sep = ""))
 
+# Save tables
+write.csv(compid, "Figures/comp_id_influence.csv", row.names = F)
+write.csv(compid_rd, "Figures/comp_id_influence_rand.csv", row.names = F)
 
 #===========================================================
 # 3. Is conspecific or heterospecific competition strongest?
