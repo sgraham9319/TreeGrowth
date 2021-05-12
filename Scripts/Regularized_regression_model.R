@@ -13,9 +13,9 @@ rescale <- function(x){
 }
 
 # Create vectors of focal species and training sets
-#focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
-focal_sps <- c("THPL", "TSME")
-train_sets <- 1:2
+focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
+#focal_sps <- c("THPL", "TSME")
+train_sets <- 1:4
 
 # Create matrix to hold R squared values
 rsq_vals <- matrix(NA, ncol = 2,
@@ -182,3 +182,36 @@ id_cols <- data.frame(species = rep(focal_sps, each = length(train_sets)),
 int_coef <- cbind(id_cols, int_coef)
 write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv", row.names = F)
 #write.csv(int_coef, "Data/Figure_data/RR_sps_ints_rand.csv", row.names = F)
+
+# Format and save other ecological interpretation tables
+nbhd_inf <- as.data.frame(nbhd_inf)
+nbhd_inf <- nbhd_inf %>%
+  mutate(species = focal_sps) %>%
+  rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
+  select(species, train1, train2, train3, train4)
+write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf.csv", row.names = F)
+#write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf_rand.csv", row.names = F)
+
+comp_id_inf <- as.data.frame(comp_id_inf)
+comp_id_inf <- comp_id_inf %>%
+  mutate(species = focal_sps) %>%
+  rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
+  select(species, train1, train2, train3, train4)
+write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf.csv", row.names = F)
+#write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf_rand.csv", row.names = F)
+
+inter_str <- as.data.frame(inter_str)
+inter_str <- inter_str %>%
+  mutate(species = focal_sps) %>%
+  rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
+  select(species, train1, train2, train3, train4)
+write.csv(inter_str, "Data/Figure_data/inter_str.csv", row.names = F)
+#write.csv(inter_str, "Data/Figure_data/inter_str_rand.csv", row.names = F)
+
+intra_str <- as.data.frame(intra_str)
+intra_str <- intra_str %>%
+  mutate(species = focal_sps) %>%
+  rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
+  select(species, train1, train2, train3, train4)
+write.csv(intra_str, "Data/Figure_data/intra_str.csv", row.names = F)
+#write.csv(intra_str, "Data/Figure_data/intra_str_rand.csv", row.names = F)
