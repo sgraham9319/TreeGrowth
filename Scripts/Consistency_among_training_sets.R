@@ -42,17 +42,25 @@ r2_table <- lkhd_r2 %>%
                           "training_set" = "training")) %>%
   rename(train_rr = train_r2, test_rr = test_r2) %>%
   select(focal_sps, training_set, sample_size, train_lkhd, train_rr, test_lkhd,
-         test_rr)
+         test_rr) %>%
+  mutate(train_lkhd = round(train_lkhd, 2),
+         train_rr = round(train_rr, 2),
+         test_lkhd = round(test_lkhd, 2),
+         test_rr = round(test_rr, 2))
 r2_rand_table <- lkhd_r2_rand %>%
   left_join(rr_r2_rand, by = c("focal_sps" = "species",
                                "training_set" = "training")) %>%
   rename(train_rr = train_r2, test_rr = test_r2) %>%
   select(focal_sps, training_set, sample_size, train_lkhd, train_rr, test_lkhd,
-         test_rr)
+         test_rr) %>%
+  mutate(train_lkhd = round(train_lkhd, 2),
+         train_rr = round(train_rr, 2),
+         test_lkhd = round(test_lkhd, 2),
+         test_rr = round(test_rr, 2))
 
 # Save r2 tables
-#write.csv(r2_table, "Figures/train_test_fit.csv", row.names = F)
-#write.csv(r2_rand_table, "Figures/train_test_fit_rand.csv", row.names = F)
+write.csv(r2_table, "Figures/train_test_fit.csv", row.names = F)
+write.csv(r2_rand_table, "Figures/train_test_fit_rand.csv", row.names = F)
 
 # Make R2 figures
 r2 <- read.csv("Figures/train_test_fit.csv", stringsAsFactors = F)
