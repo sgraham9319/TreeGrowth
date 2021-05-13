@@ -125,24 +125,25 @@ for(set in train_sets){
     # Subset coefficients table for other ecological interpretations
     mod_coef_sps_dens <- mod$mod_coef %>%
       select(c(grep("sps_comp", names(mod$mod_coef)),
-               grep("dens", names(mod$mod_coef)),
-               intra))
+               grep("dens", names(mod$mod_coef))))
     
     # Record number of models where neighborhood matters
     nbhd_inf[i, set] <- sum(apply(mod_coef_sps_dens, 1, sum) != 0)
     
     # Further subset to only species identity variables
     mod_coef_sps <- mod_coef_sps_dens %>%
-      select(-c(grep("dens", names(mod_coef_sps_dens))))
+      select(c(grep("sps_comp", names(mod_coef_sps_dens))))
     
     # Record number of models where neighbor species identity matters
     comp_id_inf[i, set] <- sum(apply(mod_coef_sps, 1, sum) != 0)
     
     # Record number of models where interspecific competition stronger
-    inter_str[i, set] <- sum(mod_coef_sps$intra > 0)
+    inter_str[i, set] <- sum(mod_coef_sps[, paste("sps_comp", focal_sps[i],
+                                                  sep = "")] > 0)
     
     # Record number of models where intraspecific competition stronger
-    intra_str[i, set] <- sum(mod_coef_sps$intra < 0)
+    intra_str[i, set] <- sum(mod_coef_sps[, paste("sps_comp", focal_sps[i],
+                                                  sep = "")] < 0)
     
   }
 }
