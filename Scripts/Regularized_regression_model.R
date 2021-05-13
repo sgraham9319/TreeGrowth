@@ -67,18 +67,14 @@ for(set in train_sets){
   # Loop through focal species
   for(i in 1:length(focal_sps)){
     
-    # Subset to focal species and create additional explanatory variables
+    # Subset to focal species and create interspecific density variable
     sing_sp <- train %>%
       filter(species == focal_sps[i]) %>%
-      mutate(
-        intra = if_else(sps_comp == focal_sps[i], 1, 0),
-        inter_dens = all_density - get(paste(focal_sps[i], "density",
+      mutate(inter_dens = all_density - get(paste(focal_sps[i], "density",
                                              sep = "_")))
     ss_test <- test %>%
       filter(species == focal_sps[i]) %>%
-      mutate(
-        intra = if_else(sps_comp == focal_sps[i], 1, 0),
-        inter_dens = all_density - get(paste(focal_sps[i], "density",
+      mutate(inter_dens = all_density - get(paste(focal_sps[i], "density",
                                              sep = "_")))
     
     # Load common competitors data and extract for focal species

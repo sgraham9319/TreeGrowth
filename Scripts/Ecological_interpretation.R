@@ -1,7 +1,6 @@
 library(tidyverse)
 
-
-
+source("Functions/intra_vs_inter_lkhd.R")
 
 #============================================================
 # 1. Does the competitive neighborhood influence tree growth?
@@ -104,6 +103,10 @@ intra <- lkhd_intra %>%
   left_join(rr_intra, by = "species")
 intra_rd <- lkhd_intra_rd %>%
   left_join(rr_intra_rd, by = "species")
+
+# Save tables
+write.csv(intra, "Figures/intra_vs_inter.csv", row.names = F)
+write.csv(intra_rd, "Figures/intra_vs_inter_rand.csv", row.names = F)
 
 #================================================
 # 4. Which species are the strongest competitors?
