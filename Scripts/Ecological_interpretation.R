@@ -1,6 +1,8 @@
 library(tidyverse)
+library(paletteer)
 
 source("Functions/intra_vs_inter_lkhd.R")
+source("Functions/sps_int_plot.R")
 
 #============================================================
 # 1. Does the competitive neighborhood influence tree growth?
@@ -111,3 +113,6 @@ write.csv(intra_rd, "Figures/intra_vs_inter_rand.csv", row.names = F)
 #================================================
 # 4. Which species are the strongest competitors?
 #================================================
+
+sps_int_plot("ABAM", train_type = "regular")
+sps_int_plot("TSME", train_type = "random")
