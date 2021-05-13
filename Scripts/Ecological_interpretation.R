@@ -114,5 +114,15 @@ write.csv(intra_rd, "Figures/intra_vs_inter_rand.csv", row.names = F)
 # 4. Which species are the strongest competitors?
 #================================================
 
-sps_int_plot("ABAM", train_type = "regular")
-sps_int_plot("TSME", train_type = "random")
+# Create vector of species
+species <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
+
+# Create regular training set plots
+for(i in species){
+  sps_int_plot(i, train_type = "regular")
+}
+
+# Create random training set plots
+for(i in species){
+  sps_int_plot(i, train_type = "random")
+}
