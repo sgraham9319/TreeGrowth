@@ -14,7 +14,6 @@ rescale <- function(x){
 
 # Create vectors of focal species and training sets
 focal_sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
-#focal_sps <- c("THPL", "TSME")
 train_sets <- 1:4
 
 # Create matrix to hold R squared values
