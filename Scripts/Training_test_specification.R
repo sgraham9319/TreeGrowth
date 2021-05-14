@@ -1,7 +1,8 @@
 library(dplyr)
 
 # Load neighborhood data
-all_nbhds <- read.csv("Data/Output_data/neighborhoods.csv", stringsAsFactors = F)
+all_nbhds <- read.csv("Data/Output_data/neighborhoods.csv",
+                      stringsAsFactors = F)
 
 #=============================================
 # Specifying spatially separated training sets
@@ -119,8 +120,8 @@ for(set in 1:4){
     filter(test_set != set)
   
   # Write to .csv
-  write.csv(test, paste("Data/Output_data/rand_test", set, ".csv", sep = ""),
-            row.names = F)
-  write.csv(training, paste("Data/Output_data/rand_training", set, ".csv", sep = ""),
-            row.names = F)
+  write.csv(test, paste("Data/Output_data/rand_test", set, ".csv",
+                        sep = ""), row.names = F)
+  write.csv(training, paste("Data/Output_data/rand_training", set, ".csv",
+                            sep = ""), row.names = F)
 }
