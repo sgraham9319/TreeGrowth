@@ -29,30 +29,30 @@ growth_pred <- function(nbhd_data, X0, Xb, gmax, pet_a, pet_b,
       
       if(is.null(lmd1)){ # Equivalent competition modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta))
+          exp(-C * nci_eq(neighbors, alpha, beta))
         
       } else if(is.null(lmd3)){ # Inter vs. inter competition modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2))
+          exp(-C * nci_int(neighbors, alpha, beta, lmd1, lmd2))
         
       } else if(is.null(lmd5)){ # Species-specific competition (4 sps) modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4))
+          exp(-C * nci_ss4(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4))
         
       } else if(is.null(lmd6)){ # Species-specific competition (5 sps) modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
-                       lmd5))
+          exp(-C * nci_ss5(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
+                           lmd5))
         
       } else if(is.null(lmd9)){ # Species-specific competition (8 sps) modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
-                       lmd5, lmd6, lmd7, lmd8))
+          exp(-C * nci_ss8(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
+                           lmd5, lmd6, lmd7, lmd8))
         
       } else if(!is.null(lmd9)){ # Species-specific competition (9 sps) modifier
         pred_grow[id] <- pred_grow[id] *
-          exp(-C * nci(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
-                       lmd5, lmd6, lmd7, lmd8, lmd9))
+          exp(-C * nci_ss9(neighbors, alpha, beta, lmd1, lmd2, lmd3, lmd4,
+                           lmd5, lmd6, lmd7, lmd8, lmd9))
         
       }
     }
@@ -181,4 +181,9 @@ neg_log_lkhd <- function(par){
   # Return value
   return(NLL)
   
+}
+
+# Create function for running optimization
+nll_opt <- function(par_list){
+  optim(par = par_list[1,], fn = neg_log_lkhd, method = "SANN")
 }
