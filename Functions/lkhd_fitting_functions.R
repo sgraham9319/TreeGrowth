@@ -185,5 +185,5 @@ neg_log_lkhd <- function(par){
 
 # Create function for running optimization
 nll_opt <- function(par_list){
-  optim(par = par_list[1,], fn = neg_log_lkhd, method = "SANN")
+  optim(par = unlist(par_list[1,]), fn = neg_log_lkhd, method = "SANN")
 }
