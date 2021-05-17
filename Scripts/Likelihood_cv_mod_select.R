@@ -1,6 +1,17 @@
 library(dplyr)
 library(parallel)
 
+# Define AICc calculation function
+AICc_calc <- function(k, NLL, n){
+  (2 * (k + NLL)) + ((2 * ((k^2) + k)) / (n - k - 1))
+}
+
+# Define coefficient of determination function
+coef_det <- function(x){
+  1 - (sum((x$observations - x$predictions)^2) / 
+         sum((x$observations - mean(x$observations))^2))
+}
+
 # Specify training set and focal species
 set <- 1
 focal_sps <- "TSME"
@@ -43,8 +54,12 @@ sing_sp_cv <- sing_sp %>%
 sing_sp_t <- sing_sp %>%
   filter(tree_id %in% focals_t$tree_id)
 
+# Create empty data frame to store fit data
+fit_data <- data.frame("X0" = numeric())
 
-
+#----------------------------------
+# Model structure 1: No competition
+#----------------------------------
 
 # Create growth prediction function
 growth_pred <- function(nbhd_data, X0, Xb, gmax, pet_a, pet_b){
@@ -95,10 +110,10 @@ no_comp_NLL <- function(par){
   if(pet_b < 0 | pet_b > 3) {return(Inf)}
   
   # Make growth predictions
-  pred <- growth_pred(sing_sp, X0, Xb, gmax, pet_a, pet_b)
+  pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b)
   
   # Join predictions to observations by tree_id
-  combined <- left_join(focals, pred, by = c("tree_id" = "ids"))
+  combined <- left_join(focals_t, pred, by = c("tree_id" = "ids"))
   
   # Calculate negative log likelihood
   NLL <- -sum(dnorm(combined$annual_growth, mean = combined$pred_grow,
@@ -110,19 +125,15 @@ no_comp_NLL <- function(par){
 }
 
 # Create set of starting values
-X0 <- c(5, 15, 25)
+X0 <- 15#c(5, 15, 25)
 Xb <- 2
 gmax <- 1
-pet_a <- c(2, 4)
-pet_b <- c(1, 2)
+pet_a <- 3
+pet_b <- 2
 sigma <- 5
 starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
                              pet_b = pet_b, sigma = sigma)
 starting_vals <- bind_rows(starting_vals, starting_vals)
-
-# Try optimizing one time for TSME - takes about 7 minutes
-#par <- as.vector(starting_vals[1,])
-#fit <- optim(par, no_comp_NLL, method = "SANN")
 
 # Convert starting values data frame to list format
 start_vals <- split(starting_vals, 1:nrow(starting_vals))
@@ -150,6 +161,45 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 # Combine starting and optimized values
 output <- cbind(starting_vals, optim_vals)
 
+# Add AICc column
+output$AICc <- AICc_calc(ncol(starting_vals), output$NLL, nrow(focals_t))
+
+# Add empty train_r2 and cv_r2 columns
+output$train_r2 <- rep(NA, times = nrow(output))
+output$cv_r2 <- rep(NA, times = nrow(output))
+
+# Make growth predictions and calculate coefficient of determination
+for(i in 1:nrow(output)){
+  
+  # Predict training growth
+  growth_t <- growth_pred(sing_sp_t, output[i, "X0_opt"],
+                          output[i, "Xb_opt"], output[i, "gmax_opt"],
+                          output[i, "pet_a_opt"], output[i, "pet_b_opt"])
+  
+  # Predict test growth
+  growth_cv <- growth_pred(sing_sp_cv, output[i, "X0_opt"],
+                           output[i, "Xb_opt"], output[i, "gmax_opt"],
+                           output[i, "pet_a_opt"], output[i, "pet_b_opt"])
+  
+  # Combine predicted and observed growth
+  obs_pred_t <- focals_t %>%
+    left_join(growth_t, by = c("tree_id" = "ids")) %>%
+    rename(observations = annual_growth,
+           predictions = pred_grow)
+  obs_pred_cv <- focals_cv %>%
+    left_join(growth_cv, by = c("tree_id" = "ids")) %>%
+    rename(observations = annual_growth,
+           predictions = pred_grow)
+  
+  # Calculate coefficients of determination
+  output$train_r2[i] <- coef_det(obs_pred_t)
+  output$cv_r2[i] <- coef_det(obs_pred_cv)
+  
+}
+
+# Add results to fit data
+fit_data <- bind_rows(fit_data, output)
+
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/no_comp",
+write.csv(output, paste("/gscratch/stf/sgraham3/output/cv",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
