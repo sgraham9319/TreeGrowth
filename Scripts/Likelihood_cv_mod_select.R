@@ -17,10 +17,10 @@ set <- 1
 focal_sps <- "TSME"
 
 # Load training data
-training <- read.csv(paste("Data/Output_data/rand_training", set,
-                           ".csv", sep = ""), stringsAsFactors = F)
-#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+#training <- read.csv(paste("Data/Output_data/rand_training", set,
 #                           ".csv", sep = ""), stringsAsFactors = F)
+training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -91,7 +91,19 @@ growth_pred <- function(nbhd_data, X0, Xb, gmax, pet_a, pet_b){
 }
 
 # Define negative log likelihood function to be minimized
-no_comp_NLL <- function(par){
+neg_log_lkhd <- function(par){
+  
+  # Determine model structure using length of par
+  if(length(par) == 6){
+    mod_str <- "no_comp"
+  } else if(length(par) == 9){
+    mod_str <- "eq_comp"
+  } else if(length(par) == 11){
+    mod_str <- "int_comp"
+  } else{
+    mod_str <- "ss_comp"
+    num_comps <- length(par) - 9
+  }
   
   # Define parameters
   X0 <- par[1]
@@ -99,7 +111,33 @@ no_comp_NLL <- function(par){
   gmax <- par[3]
   pet_a <- par[4]
   pet_b <- par[5]
-  sigma <- par[6]
+  if(mod_str != "no_comp"){
+    C <- par[6]
+    alpha <- par[7]
+    beta <- par[8]
+  }
+  if(mod_str == "int_comp"){
+    intra <- par[9]
+    inter <- par[10]
+  }
+  if(mod_str == "ss_comp"){
+    lmd1 <- par[9]
+    lmd2 <- par[10]
+    lmd3 <- par[11]
+    lmd4 <- par[12]
+    if(num_comps > 4){
+      lmd5 <- par[13]
+    }
+    if(num_comps > 5){
+      lmd6 <- par[14]
+      lmd7 <- par[15]
+      lmd8 <- par[16] 
+    }
+    if(num_comps == 9){
+      lmd9 <- par[17]
+    }
+  }
+  sigma <- par[length(par)]
   
   # Prevent parameter values from becoming nonsensical
   if(sigma < 0) {return(Inf)}
@@ -108,9 +146,56 @@ no_comp_NLL <- function(par){
   if(gmax < 0) {return(Inf)}
   if(pet_a < 2 | pet_a > 6) {return(Inf)}
   if(pet_b < 0 | pet_b > 3) {return(Inf)}
+  if(mod_str != "no_comp"){
+    if(C < 0 | C > 10) {return(Inf)}
+    if(alpha < 0 | alpha > 4) {return(Inf)}
+    if(beta < 0 | beta > 4) {return(Inf)}
+  }
+  if(mod_str == "int_comp"){
+    if(intra < 0 | intra > 1) {return(Inf)}
+    if(inter < 0 | inter > 1) {return(Inf)}
+  }
+  if(mod_str == "ss_comp"){
+    if(lmd1 < 0 | lmd1 > 1) {return(Inf)}
+    if(lmd2 < 0 | lmd2 > 1) {return(Inf)}
+    if(lmd3 < 0 | lmd3 > 1) {return(Inf)}
+    if(lmd4 < 0 | lmd4 > 1) {return(Inf)}
+    if(num_comps > 4){
+      if(lmd5 < 0 | lmd5 > 1) {return(Inf)}
+    }
+    if(num_comps > 5){
+      if(lmd6 < 0 | lmd6 > 1) {return(Inf)}
+      if(lmd7 < 0 | lmd7 > 1) {return(Inf)}
+      if(lmd8 < 0 | lmd8 > 1) {return(Inf)} 
+    }
+    if(num_comps == 9){
+      if(lmd9 < 0 | lmd9 > 1) {return(Inf)}
+    }
+  }
   
   # Make growth predictions
-  pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b)
+  if(mod_str == "no_comp"){
+    pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b)
+  } else if(mod_str == "eq_comp"){
+    pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta)
+  } else if(mod_str == "int_comp"){
+    pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha,
+                        beta, intra, inter)
+  } else if(mod_str == "ss_comp"){
+    if(num_comps == 4){
+      pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta,
+                          lmd1, lmd2, lmd3, lmd4)
+    } else if(num_comps == 5){
+      pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta,
+                          lmd1, lmd2, lmd3, lmd4, lmd5)
+    } else if(num_comps == 8){
+      pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta,
+                          lmd1, lmd2, lmd3, lmd4, lmd5, lmd6, lmd7, lmd8)
+    } else if(num_comps == 9){
+      pred <- growth_pred(sing_sp_t, X0, Xb, gmax, pet_a, pet_b, C, alpha, beta,
+                          lmd1, lmd2, lmd3, lmd4, lmd5, lmd6, lmd7, lmd8, lmd9)
+    }
+  }
   
   # Join predictions to observations by tree_id
   combined <- left_join(focals_t, pred, by = c("tree_id" = "ids"))
@@ -139,17 +224,12 @@ starting_vals <- bind_rows(starting_vals, starting_vals)
 start_vals <- split(starting_vals, 1:nrow(starting_vals))
 
 # Create function for running optimization
-no_comp_opt <- function(par_list){
-  
-  # Run optim from base R
-  optim(par = c(par_list[1,1], par_list[1,2], par_list[1,3],
-                par_list[1,4], par_list[1,5], par_list[1,6]),
-        fn = no_comp_NLL, method = "SANN")
-  
+nll_opt <- function(par_list){
+  optim(par = par_list[1,], fn = neg_log_lkhd, method = "SANN")
 }
 
 # Run optimization with mclapply - this will not work on a Windows machine
-optim_output <- mclapply(start_vals, no_comp_opt)
+optim_output <- mclapply(start_vals, nll_opt)
 
 # Format output as data frame
 optim_vals <- data.frame(matrix(unlist(optim_output),
@@ -201,5 +281,5 @@ for(i in 1:nrow(output)){
 fit_data <- bind_rows(fit_data, output)
 
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/cv",
+write.csv(fit_data, paste("/gscratch/stf/sgraham3/output/cv",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
