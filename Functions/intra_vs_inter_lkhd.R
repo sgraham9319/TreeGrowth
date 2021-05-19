@@ -10,8 +10,9 @@ intra_vs_inter_lkhd <- function(train_type){
   train_sets <- 1:4
   sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
   
-  # Create empty results table
+  # Create empty results tables
   intra <- matrix(NA, nrow = length(sps), ncol = length(train_sets))
+  inter <- matrix(NA, nrow = length(sps), ncol = length(train_sets))
   
   # Load table containing sample size information
   if(train_type == "regular"){
@@ -46,22 +47,23 @@ intra_vs_inter_lkhd <- function(train_type){
       output <- output %>%
         arrange(AICc)
       
-      # Determine whether intraspecific competition strongest
-      if(output$intra_opt[1] > output$inter_opt[1]){
-        intra[i, set] <- "-"
-      } else{
-        intra[i, set] <- "+"
-      }
+      # Store estimated intra and inter parameters
+      intra[i, set] <- output$intra_opt[1]
+      inter[i, set] <- output$inter_opt[1]
+      
     }
   }
   
-  # Format output table
-  intra <- as.data.frame(intra)
-  intra <- intra %>%
+  # Create feedbacks table
+  feedbacks <- round(inter - intra, 2)
+  
+  # Format feedbacks table
+  feedbacks <- as.data.frame(feedbacks)
+  feedbacks <- feedbacks %>%
     rename(L1 = V1, L2 = V2, L3 = V3, L4 = V4) %>%
     mutate(species = sps) %>%
     select(species, L1, L2, L3, L4)
   
   # Return results
-  return(intra)
+  return(feedbacks)
 }

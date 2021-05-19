@@ -11,7 +11,7 @@ coef_det <- function(x){
 }
 
 # Define focal species
-focal_sps <- "PSME"
+focal_sps <- "ABAM"
 
 # Load model output
 output <- read.csv(paste("Data/Output_data/cv1_", focal_sps, ".csv", sep = ""))
