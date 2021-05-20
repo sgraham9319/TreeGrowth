@@ -137,12 +137,18 @@ for(set in train_sets){
     comp_id_inf[i, set] <- sum(apply(mod_coef_sps, 1, sum) != 0)
     
     # Record number of models where interspecific competition stronger
-    inter_str[i, set] <- sum(mod_coef_sps[, paste("sps_comp", focal_sps[i],
-                                                  sep = "")] > 0)
+    inter_str[i, set] <- sum(mod_coef_sps_dens[, paste("sps_comp", focal_sps[i],
+                                                       sep = "")] > 0 |
+                               mod_coef_sps_dens[, paste(focal_sps[i],
+                                                         "density",
+                                                         sep = "_")] > 0)
     
     # Record number of models where intraspecific competition stronger
-    intra_str[i, set] <- sum(mod_coef_sps[, paste("sps_comp", focal_sps[i],
-                                                  sep = "")] < 0)
+    intra_str[i, set] <- sum(mod_coef_sps_dens[, paste("sps_comp", focal_sps[i],
+                                                       sep = "")] < 0 |
+                               mod_coef_sps_dens[, paste(focal_sps[i],
+                                                         "density",
+                                                         sep = "_")] < 0)
     
   }
 }
