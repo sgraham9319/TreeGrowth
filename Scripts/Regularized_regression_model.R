@@ -109,46 +109,51 @@ for(set in train_sets){
     # Store test R squared value
     rsq_vals[set + ((i - 1) * length(train_sets)), 2] <- mod$test_R_squared
     
-    # Store best model coefficients and interaction coefficients
+    # Extract best model coefficients and interaction coefficients
+    mod_coef_all <- as.matrix(coef(mod$mod))[c(1, 3:nrow(coef(mod$mod))), ]
+    mod_coef_all <- as.data.frame(t(mod_coef_all))
+    mod_sps_int <- apply(mod$mod_coef[, grep("sps_comp", names(mod$mod_coef))],
+                         2, rescale)
+    mod_sps_int <- as.data.frame(t(mod_sps_int))
+    
+    # Store coefficients
     if(set == 1){
-      coef_tables[[focal_sps[i]]] <- as.matrix(coef(mod$mod))
-      sps_int[[focal_sps[i]]] <- apply(
-        mod$mod_coef[, grep("sps_comp", names(mod$mod_coef))], 2, rescale)
+      coef_tables[[focal_sps[i]]] <- mod_coef_all
+      sps_int[[focal_sps[i]]] <- mod_sps_int
     } else {
-      coef_tables[[focal_sps[i]]] <- cbind(coef_tables[[focal_sps[i]]],
-                                           as.matrix(coef(mod$mod)))
-      sps_int[[focal_sps[i]]] <- rbind(sps_int[[focal_sps[i]]], apply(
-        mod$mod_coef[, grep("sps_comp", names(mod$mod_coef))], 2, rescale))
+      coef_tables[[focal_sps[i]]] <- bind_rows(coef_tables[[focal_sps[i]]],
+                                               mod_coef_all)
+      sps_int[[focal_sps[i]]] <- bind_rows(sps_int[[focal_sps[i]]], mod_sps_int)
     }
     
-    # Subset coefficients table for other ecological interpretations
-    mod_coef_sps_dens <- mod$mod_coef %>%
-      select(c(grep("sps_comp", names(mod$mod_coef)),
-               grep("dens", names(mod$mod_coef))))
+    # Subset coefficients table to neighborhood coefficients
+    coef_sub <- mod$mod_coef %>%
+      select(-c("(Intercept)", "mse", "R_squared", "pet_mm"))
     
     # Record number of models where neighborhood matters
-    nbhd_inf[i, set] <- sum(apply(mod_coef_sps_dens, 1, sum) != 0)
+    nbhd_inf[i, set] <- sum(apply(abs(coef_sub), 1, sum) != 0)
     
     # Further subset to only species identity variables
-    mod_coef_sps <- mod_coef_sps_dens %>%
-      select(c(grep("sps_comp", names(mod_coef_sps_dens))))
+    coef_sub <- coef_sub %>%
+      select(-c("dbh_comp", "prox", "all_density"))
     
     # Record number of models where neighbor species identity matters
-    comp_id_inf[i, set] <- sum(apply(mod_coef_sps, 1, sum) != 0)
+    comp_id_inf[i, set] <- sum(apply(abs(coef_sub), 1, sum) != 0)
+    
+    # Further subset to conspecific coefficients
+    coef_sub <- coef_sub %>%
+      select(c(paste("sps_comp", focal_sps[i], sep = ""),
+               paste(focal_sps[i], "density", sep = "_")))
     
     # Record number of models where interspecific competition stronger
-    inter_str[i, set] <- sum(mod_coef_sps_dens[, paste("sps_comp", focal_sps[i],
-                                                       sep = "")] > 0 |
-                               mod_coef_sps_dens[, paste(focal_sps[i],
-                                                         "density",
-                                                         sep = "_")] > 0)
+    inter_str[i, set] <- length(which(apply(coef_sub, 1, sum) > 0 &
+                                        coef_sub[, 1] >= 0 &
+                                        coef_sub[, 2] >= 0))
     
     # Record number of models where intraspecific competition stronger
-    intra_str[i, set] <- sum(mod_coef_sps_dens[, paste("sps_comp", focal_sps[i],
-                                                       sep = "")] < 0 |
-                               mod_coef_sps_dens[, paste(focal_sps[i],
-                                                         "density",
-                                                         sep = "_")] < 0)
+    intra_str[i, set] <- length(which(apply(coef_sub, 1, sum) < 0 &
+                                        coef_sub[, 1] <= 0 &
+                                        coef_sub[, 2] <= 0))
     
   }
 }
@@ -165,8 +170,8 @@ write.csv(rsq_vals, "Data/Figure_data/RR_r2.csv", row.names = F)
 
 # Format and save coefficient tables
 for(i in 1:length(focal_sps)){
-  coef_tab <- as.data.frame(coef_tables[[focal_sps[i]]])
-  coef_tab <- coef_tab[3:nrow(coef_tab),]
+  coef_tab <- as.data.frame(t(coef_tables[[focal_sps[i]]]))
+  coef_tab <- coef_tab[2:nrow(coef_tab),]
   names(coef_tab) <- train_sets
   write.csv(coef_tab, paste("Data/Figure_data/RR_coef_", focal_sps[i],
                             ".csv", sep = ""))
