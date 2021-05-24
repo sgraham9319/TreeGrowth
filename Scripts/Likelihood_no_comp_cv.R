@@ -1,10 +1,9 @@
 library(dplyr)
+library(parallel)
 
 # Load required functions
-#source("/gscratch/stf/sgraham3/Rscripts/lkhd_fitting_functions.R")
-#source("/gscratch/stf/sgraham3/Rscripts/nci.R")
-source("Functions/lkhd_fitting_functions.R")
-source("Functions/nci.R")
+source("/gscratch/stf/sgraham3/Rscripts/lkhd_fitting_functions.R")
+source("/gscratch/stf/sgraham3/Rscripts/nci.R")
 
 # Create mean square error calculation function
 mse <- function(x){
@@ -18,7 +17,8 @@ focal_sps <- "TSME"
 nfolds <- 10
 
 # Load training data
-training <- read.csv("Data/Output_data/training1.csv")
+training <- read.csv("/gscratch/stf/sgraham3/data/training1.csv",
+                     stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -68,16 +68,16 @@ start_vals <- split(starting_vals, 1:nrow(starting_vals))
 best_mods <- data.frame(X0 = double())
 
 # Loop through cross-validation sets
-for(i in 1:nfolds){
+for(cv in 1:nfolds){
   
   # Define training and validation sets
   sing_sp_val <- sing_sp %>%
-    filter(val_set == i)
+    filter(val_set == cv)
   sing_sp_t <- setdiff(sing_sp, sing_sp_val)
   
   # Define training and validation focals
   focals_val <- focals %>%
-    filter(val_set == i)
+    filter(val_set == cv)
   focals_t <- setdiff(focals, focals_val)
   
   # Run optimization with mclapply - this will not work on a Windows machine
@@ -96,27 +96,33 @@ for(i in 1:nfolds){
   # Create empty column for mean square error
   output$mse <- NA
   
-  # Make growth predictions
-  growth_test <- growth_pred(sing_sp_val,
-                             output[i, "X0_opt"],
-                             output[i, "Xb_opt"],
-                             output[i, "gmax_opt"],
-                             output[i, "pet_a_opt"],
-                             output[i, "pet_b_opt"])
-  
-  # Combine predicted and observed growth
-  obs_pred <- focals_val %>%
-    left_join(growth_test, by = c("tree_id" = "ids")) %>%
-    rename(observations = annual_growth,
-           predictions = pred_grow)
-  
-  # Calculate and store mean square error
-  output$mse[i] <- mse(obs_pred)
+  # Loop through fitted models to evaluate them
+  for(i in 1:nrow(output)){
+    
+    # Make growth predictions
+    growth_test <- growth_pred(sing_sp_val,
+                               output[i, "X0_opt"],
+                               output[i, "Xb_opt"],
+                               output[i, "gmax_opt"],
+                               output[i, "pet_a_opt"],
+                               output[i, "pet_b_opt"])
+    
+    # Combine predicted and observed growth
+    obs_pred <- focals_val %>%
+      left_join(growth_test, by = c("tree_id" = "ids")) %>%
+      rename(observations = annual_growth,
+             predictions = pred_grow)
+    
+    # Calculate and store mean square error
+    output$mse[i] <- mse(obs_pred)
+    
+  }
   
   # Store best model
   best_mods <- bind_rows(best_mods, output[which.min(output$mse), ])
   
 }
 
-
-
+# Write results to csv
+write.csv(best_mods, paste("/gscratch/stf/sgraham3/output/no_comp_cv_",
+                           focal_sps, ".csv", sep = ""), row.names = F)
