@@ -61,55 +61,62 @@ sigma <- 5
 starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
                              pet_b = pet_b, sigma = sigma)
 
-# Define cross-validation set
-cv <- 1
-
-# Define training and validation sets
-sing_sp_val <- sing_sp %>%
-  filter(val_set == cv)
-sing_sp_t <- setdiff(sing_sp, sing_sp_val)
-
-# Define training and validation focals
-focals_val <- focals %>%
-  filter(val_set == cv)
-focals_t <- setdiff(focals, focals_val)
-
-# Try optimizing one time for TSME - takes about 7 minutes
-#par <- as.vector(starting_vals[1,])
-#fit <- optim(par, neg_log_lkhd, method = "SANN")
-
 # Convert starting values data frame to list format
 start_vals <- split(starting_vals, 1:nrow(starting_vals))
 
-# Run optimization with mclapply - this will not work on a Windows machine
-optim_output <- mclapply(start_vals, nll_opt)
+# Create table to store best models output
+best_mods <- data.frame(X0 = double())
 
-# Format output as data frame
-optim_vals <- data.frame(matrix(unlist(optim_output),
-                                nrow = nrow(starting_vals),
-                                byrow = T))
-optim_vals <- optim_vals[, 1:(ncol(starting_vals) + 1)]
-names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
-
-# Combine starting and optimized values
-output <- cbind(starting_vals, optim_vals)
-
-# Make growth predictions
-growth_test <- growth_pred(sing_sp_val,
-                           output[fit_comp$index[i], "X0_opt"],
-                           output[fit_comp$index[i], "Xb_opt"],
-                           output[fit_comp$index[i], "gmax_opt"],
-                           output[fit_comp$index[i], "pet_a_opt"],
-                           output[fit_comp$index[i], "pet_b_opt"])
-
-# Combine predicted and observed growth
-obs_pred <- focals_val %>%
-  left_join(growth_test, by = c("tree_id" = "ids")) %>%
-  rename(observations = annual_growth,
-         predictions = pred_grow)
-
-# Calculate and store mean square error
-mse(obs_pred)
+# Loop through cross-validation sets
+for(i in 1:nfolds){
+  
+  # Define training and validation sets
+  sing_sp_val <- sing_sp %>%
+    filter(val_set == i)
+  sing_sp_t <- setdiff(sing_sp, sing_sp_val)
+  
+  # Define training and validation focals
+  focals_val <- focals %>%
+    filter(val_set == i)
+  focals_t <- setdiff(focals, focals_val)
+  
+  # Run optimization with mclapply - this will not work on a Windows machine
+  optim_output <- mclapply(start_vals, nll_opt)
+  
+  # Format output as data frame
+  optim_vals <- data.frame(matrix(unlist(optim_output),
+                                  nrow = nrow(starting_vals),
+                                  byrow = T))
+  optim_vals <- optim_vals[, 1:(ncol(starting_vals) + 1)]
+  names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
+  
+  # Combine starting and optimized values
+  output <- cbind(starting_vals, optim_vals)
+  
+  # Create empty column for mean square error
+  output$mse <- NA
+  
+  # Make growth predictions
+  growth_test <- growth_pred(sing_sp_val,
+                             output[i, "X0_opt"],
+                             output[i, "Xb_opt"],
+                             output[i, "gmax_opt"],
+                             output[i, "pet_a_opt"],
+                             output[i, "pet_b_opt"])
+  
+  # Combine predicted and observed growth
+  obs_pred <- focals_val %>%
+    left_join(growth_test, by = c("tree_id" = "ids")) %>%
+    rename(observations = annual_growth,
+           predictions = pred_grow)
+  
+  # Calculate and store mean square error
+  output$mse[i] <- mse(obs_pred)
+  
+  # Store best model
+  best_mods <- bind_rows(best_mods, output[which.min(output$mse), ])
+  
+}
 
 
 
