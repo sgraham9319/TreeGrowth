@@ -110,9 +110,9 @@ opt_func <- function(cv_par){
                              gmax = optim_vals["gmax"],
                              pet_a = optim_vals["pet_a"],
                              pet_b = optim_vals["pet_b"],
-                             gmax = optim_vals["C"],
-                             pet_a = optim_vals["alpha"],
-                             pet_b = optim_vals["beta"])
+                             C = optim_vals["C"],
+                             alpha = optim_vals["alpha"],
+                             beta = optim_vals["beta"])
   
   # Combine predicted and observed growth
   obs_pred <- focals_val %>%

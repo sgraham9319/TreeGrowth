@@ -11,16 +11,19 @@ mse <- function(x){
 }
 
 # Define focal species
-focal_sps <- "TSME"
+focal_sps <- "ABAM"
 
 # Define number of folds for cross-validation
 nfolds <- 10
 
+# Load common competitors data and extract for focal species
+comm_comp <- read.csv("/gscratch/stf/sgraham3/data/common_comps.csv",
+                      stringsAsFactors = F)
+comm_comp <- comm_comp[, focal_sps]
+
 # Load training data
 training <- read.csv("/gscratch/stf/sgraham3/data/rand_training1.csv",
                      stringsAsFactors = F)
-#training <- read.csv("Data/Output_data/rand_training1.csv",
-#                     stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -39,6 +42,13 @@ sing_sp <- sing_sp %>%
   ) %>%
   select(-pet_mm)
 
+# Change rare competitors to OTHR
+sing_sp <- sing_sp %>%
+  mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
+
+# Create vector of competitor species
+comps <- sort(unique(sing_sp$sps_comp))
+
 # Extract annual growth of each focal individual
 focals <- sing_sp %>%
   group_by(tree_id) %>%
@@ -55,7 +65,7 @@ sing_sp <- sing_sp %>%
 
 # Define cross-validation parameters
 cv <- 1:nfolds
-X0 <- c(5, 15, 25)
+X0 <- 5
 cv_par_df <- expand.grid(cv = cv, X0 = X0)
 
 # Convert cross-validation parameters data frame to list
@@ -89,7 +99,8 @@ opt_func <- function(cv_par){
   
   # Run optimization
   optim_output <- optim(par = c(unlist(cv_par[["params"]]["X0"]), 
-                                c(2, 1, 3, 2, 1, 1, 1, 0.5, 0.5, 5)),
+                                c(2, 1, 3, 2, 1, 1, 1, 0.5, 0.5, 0.5, 0.5,
+                                  0.5, 0.5, 0.5, 0.5, 5)),
                         fn = neg_log_lkhd, method = "SANN")
   
   # Extract optimization output
@@ -101,7 +112,7 @@ opt_func <- function(cv_par){
   
   # Add names to output
   names(optim_vals) <- c("cv_set", "X0_start", "X0", "Xb", "gmax", "pet_a",
-                         "pet_b", "C", "alpha", "beta", "intra", "inter", 
+                         "pet_b", "C", "alpha", "beta", comps, 
                          "sigma", "NLL", "mse")
   
   # Make growth predictions
@@ -114,8 +125,14 @@ opt_func <- function(cv_par){
                              C = optim_vals["C"],
                              alpha = optim_vals["alpha"],
                              beta = optim_vals["beta"],
-                             lmd1 = optim_vals["intra"],
-                             lmd2 = optim_vals["inter"])
+                             lmd1 = optim_vals[comps[1]],
+                             lmd2 = optim_vals[comps[2]],
+                             lmd3 = optim_vals[comps[3]],
+                             lmd4 = optim_vals[comps[4]],
+                             lmd5 = optim_vals[comps[5]],
+                             lmd6 = optim_vals[comps[6]],
+                             lmd7 = optim_vals[comps[7]],
+                             lmd8 = optim_vals[comps[8]])
   
   # Combine predicted and observed growth
   obs_pred <- focals_val %>%
@@ -138,5 +155,5 @@ optim_res_list <- mclapply(cv_par_list, opt_func)
 results <- bind_rows(optim_res_list)
 
 # Save results
-write.csv(results, paste("/gscratch/stf/sgraham3/output/int_comp_cv_",
+write.csv(results, paste("/gscratch/stf/sgraham3/output/ss_comp_cv_",
                            focal_sps, ".csv", sep = ""), row.names = F)
