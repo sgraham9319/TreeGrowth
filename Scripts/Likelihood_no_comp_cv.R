@@ -1,8 +1,6 @@
 library(dplyr)
 library(parallel)
 
-#test
-
 # Load required functions
 source("/gscratch/stf/sgraham3/Rscripts/lkhd_fitting_functions.R")
 source("/gscratch/stf/sgraham3/Rscripts/nci.R")
