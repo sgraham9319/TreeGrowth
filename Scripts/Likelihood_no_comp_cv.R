@@ -51,78 +51,83 @@ focals <- focals %>%
 sing_sp <- sing_sp %>%
   left_join(focals %>% select(tree_id, val_set), by = "tree_id")
 
-# Create set of starting values
+# Define cross-validation parameters
+cv <- 1:nfolds
 X0 <- c(5, 15, 25)
-Xb <- 2
-gmax <- 1
-pet_a <- 3
-pet_b <- 2
-sigma <- 5
-starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
-                             pet_b = pet_b, sigma = sigma)
+cv_par_df <- expand.grid(cv = cv, X0 = X0)
 
-# Convert starting values data frame to list format
-start_vals <- split(starting_vals, 1:nrow(starting_vals))
+# Convert cross-validation parameters data frame to list
+cv_par_list <- split(cv_par_df, 1:nrow(cv_par_df))
 
-# Create table to store best models output
-best_mods <- data.frame(X0 = double())
-
-# Loop through cross-validation sets
-for(cv in 1:nfolds){
+# Add required data frames to each list element
+for(i in cv_par_df$cv){
   
   # Define training and validation sets
   sing_sp_val <- sing_sp %>%
-    filter(val_set == cv)
+    filter(val_set == i)
   sing_sp_t <- setdiff(sing_sp, sing_sp_val)
   
-  # Define training and validation focals
+  # Define training and validation focal trees
   focals_val <- focals %>%
-    filter(val_set == cv)
+    filter(val_set == i)
   focals_t <- setdiff(focals, focals_val)
   
-  # Run optimization with mclapply - this will not work on a Windows machine
-  optim_output <- mclapply(start_vals, nll_opt)
+  # Add to cv_par_list
+  cv_par_list[[i]] <- list(cv_par_list[[i]], sing_sp_val, sing_sp_t,
+                           focals_val, focals_t)
   
-  # Format output as data frame
-  optim_vals <- data.frame(matrix(unlist(optim_output),
-                                  nrow = nrow(starting_vals),
-                                  byrow = T))
-  optim_vals <- optim_vals[, 1:(ncol(starting_vals) + 1)]
-  names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
-  
-  # Combine starting and optimized values
-  output <- cbind(starting_vals, optim_vals)
-  
-  # Create empty column for mean square error
-  output$mse <- NA
-  
-  # Loop through fitted models to evaluate them
-  for(i in 1:nrow(output)){
-    
-    # Make growth predictions
-    growth_test <- growth_pred(sing_sp_val,
-                               output[i, "X0_opt"],
-                               output[i, "Xb_opt"],
-                               output[i, "gmax_opt"],
-                               output[i, "pet_a_opt"],
-                               output[i, "pet_b_opt"])
-    
-    # Combine predicted and observed growth
-    obs_pred <- focals_val %>%
-      left_join(growth_test, by = c("tree_id" = "ids")) %>%
-      rename(observations = annual_growth,
-             predictions = pred_grow)
-    
-    # Calculate and store mean square error
-    output$mse[i] <- mse(obs_pred)
-    
-  }
-  
-  # Store best model
-  best_mods <- bind_rows(best_mods, output[which.min(output$mse), ])
+  # Name list elements
+  names(cv_par_list[[i]]) <- c("params", "sing_sp_val", "sing_sp_t",
+                               "focals_val", "focals_t")
   
 }
 
-# Write results to csv
-write.csv(best_mods, paste("/gscratch/stf/sgraham3/output/no_comp_cv_",
+# Define function for running optimization
+test_func <- function(cv_par){
+  
+  # Run optimization
+  optim_output <- optim(par = c(cv_par[["params"]]["X0"], c(2, 1, 3, 2, 5)),
+                        fn = neg_log_lkhd, method = "SANN")
+  
+  # Extract optimization output
+  optim_vals <- c(cv_par[["params"]]["cv"], cv_par[["params"]]["X0"],
+                  optim_output[["par"]], optim_output[["value"]], NA)
+  
+  # Convert list output to vector
+  optim_vals <- unlist(optim_vals)
+  
+  # Add names to output
+  names(optim_vals) <- c("cv_set", "X0_start", "X0", "Xb", "gmax", "pet_a",
+                         "pet_b", "sigma", "NLL", "mse")
+  
+  # Make growth predictions
+  growth_test <- growth_pred(sing_sp_val,
+                             optim_vals["X0"],
+                             optim_vals["Xb"],
+                             optim_vals["gmax"],
+                             optim_vals["pet_a"],
+                             optim_vals["pet_b"])
+  
+  # Combine predicted and observed growth
+  obs_pred <- focals_val %>%
+    left_join(growth_test, by = c("tree_id" = "ids")) %>%
+    rename(observations = annual_growth,
+           predictions = pred_grow)
+  
+  # Calculate and store mean square error
+  optim_vals["mse"] <- mse(obs_pred)
+  
+  # Return optimization results
+  return(optim_vals)
+  
+}
+
+# Run optimization with mclapply - this will not work on a Windows machine
+optim_res_list <- mclapply(cv_par_list, test_func)
+
+# Combine listed results into a data frame
+results <- bind_rows(optim_res_list)
+
+# Save results
+write.csv(results, paste("/gscratch/stf/sgraham3/output/no_comp_cv_",
                            focal_sps, ".csv", sep = ""), row.names = F)
