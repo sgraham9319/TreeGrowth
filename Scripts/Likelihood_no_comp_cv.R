@@ -17,8 +17,10 @@ focal_sps <- "TSME"
 nfolds <- 10
 
 # Load training data
-training <- read.csv("/gscratch/stf/sgraham3/data/training1.csv",
+training <- read.csv("/gscratch/stf/sgraham3/data/rand_training1.csv",
                      stringsAsFactors = F)
+#training <- read.csv("Data/Output_data/rand_training1.csv",
+#                     stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -60,16 +62,16 @@ cv_par_df <- expand.grid(cv = cv, X0 = X0)
 cv_par_list <- split(cv_par_df, 1:nrow(cv_par_df))
 
 # Add required data frames to each list element
-for(i in cv_par_df$cv){
+for(i in 1:length(cv_par_list)){
   
   # Define training and validation sets
   sing_sp_val <- sing_sp %>%
-    filter(val_set == i)
+    filter(val_set == cv_par_df$cv[i])
   sing_sp_t <- setdiff(sing_sp, sing_sp_val)
   
   # Define training and validation focal trees
   focals_val <- focals %>%
-    filter(val_set == i)
+    filter(val_set == cv_par_df$cv[i])
   focals_t <- setdiff(focals, focals_val)
   
   # Add to cv_par_list
@@ -83,10 +85,11 @@ for(i in cv_par_df$cv){
 }
 
 # Define function for running optimization
-test_func <- function(cv_par){
+opt_func <- function(cv_par){
   
   # Run optimization
-  optim_output <- optim(par = c(cv_par[["params"]]["X0"], c(2, 1, 3, 2, 5)),
+  optim_output <- optim(par = c(unlist(cv_par[["params"]]["X0"]), 
+                                c(2, 1, 3, 2, 5)),
                         fn = neg_log_lkhd, method = "SANN")
   
   # Extract optimization output
@@ -101,12 +104,12 @@ test_func <- function(cv_par){
                          "pet_b", "sigma", "NLL", "mse")
   
   # Make growth predictions
-  growth_test <- growth_pred(sing_sp_val,
-                             optim_vals["X0"],
-                             optim_vals["Xb"],
-                             optim_vals["gmax"],
-                             optim_vals["pet_a"],
-                             optim_vals["pet_b"])
+  growth_test <- growth_pred(nbhd_data = sing_sp_val,
+                             X0 = optim_vals["X0"],
+                             Xb = optim_vals["Xb"],
+                             gmax = optim_vals["gmax"],
+                             pet_a = optim_vals["pet_a"],
+                             pet_b = optim_vals["pet_b"])
   
   # Combine predicted and observed growth
   obs_pred <- focals_val %>%
@@ -123,7 +126,7 @@ test_func <- function(cv_par){
 }
 
 # Run optimization with mclapply - this will not work on a Windows machine
-optim_res_list <- mclapply(cv_par_list, test_func)
+optim_res_list <- mclapply(cv_par_list, opt_func)
 
 # Combine listed results into a data frame
 results <- bind_rows(optim_res_list)
