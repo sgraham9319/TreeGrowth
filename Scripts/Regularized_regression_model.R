@@ -38,16 +38,16 @@ names(sps_int) <- focal_sps
 for(set in train_sets){
   
   # Load training data
-  train <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-                   stringsAsFactors = F)
-  #train <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
-  #                        sep = ""), stringsAsFactors = F)
+  #train <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
+  #                 stringsAsFactors = F)
+  train <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                          sep = ""), stringsAsFactors = F)
   
   # Load test data
-  test <- read.csv(paste("Data/Output_data/test", set, ".csv", sep = ""),
-                   stringsAsFactors = F)
-  #test <- read.csv(paste("Data/Output_data/rand_test", set, ".csv", sep = ""),
+  #test <- read.csv(paste("Data/Output_data/test", set, ".csv", sep = ""),
   #                 stringsAsFactors = F)
+  test <- read.csv(paste("Data/Output_data/rand_test", set, ".csv", sep = ""),
+                   stringsAsFactors = F)
   
   # Remove unneeded columns from training and test
   train <- train %>%
@@ -66,15 +66,11 @@ for(set in train_sets){
   # Loop through focal species
   for(i in 1:length(focal_sps)){
     
-    # Subset to focal species and create interspecific density variable
+    # Subset to focal species
     sing_sp <- train %>%
-      filter(species == focal_sps[i]) %>%
-      mutate(inter_dens = all_density - get(paste(focal_sps[i], "density",
-                                             sep = "_")))
+      filter(species == focal_sps[i])
     ss_test <- test %>%
-      filter(species == focal_sps[i]) %>%
-      mutate(inter_dens = all_density - get(paste(focal_sps[i], "density",
-                                             sep = "_")))
+      filter(species == focal_sps[i])
     
     # Load common competitors data and extract for focal species
     comm_comp <- read.csv("Data/Output_data/common_comps.csv",
@@ -165,18 +161,18 @@ rsq_vals <- rsq_vals %>%
          training = rep(train_sets, times = length(focal_sps))) %>%
   rename(train_r2 = V1, test_r2 = V2) %>%
   select(species, training, train_r2, test_r2)
-write.csv(rsq_vals, "Data/Figure_data/RR_r2.csv", row.names = F)
-#write.csv(rsq_vals, "Data/Figure_data/RR_r2_rand.csv", row.names = F)
+#write.csv(rsq_vals, "Data/Figure_data/RR_r2.csv", row.names = F)
+write.csv(rsq_vals, "Data/Figure_data/RR_r2_rand.csv", row.names = F)
 
 # Format and save coefficient tables
 for(i in 1:length(focal_sps)){
   coef_tab <- as.data.frame(t(coef_tables[[focal_sps[i]]]))
   coef_tab <- coef_tab[2:nrow(coef_tab),]
   names(coef_tab) <- train_sets
-  write.csv(coef_tab, paste("Data/Figure_data/RR_coef_", focal_sps[i],
-                            ".csv", sep = ""))
-  #write.csv(coef_tab, paste("Data/Figure_data/RR_coef_rand_", focal_sps[i],
+  #write.csv(coef_tab, paste("Data/Figure_data/RR_coef_", focal_sps[i],
   #                          ".csv", sep = ""))
+  write.csv(coef_tab, paste("Data/Figure_data/RR_coef_rand_", focal_sps[i],
+                            ".csv", sep = ""))
 }
 
 # Format and save species interaction coefficients
@@ -187,8 +183,8 @@ for(i in 1:length(focal_sps)){
 id_cols <- data.frame(species = rep(focal_sps, each = length(train_sets)),
                       training = rep(train_sets, times = length(focal_sps)))
 int_coef <- cbind(id_cols, int_coef)
-write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv", row.names = F)
-#write.csv(int_coef, "Data/Figure_data/RR_sps_ints_rand.csv", row.names = F)
+#write.csv(int_coef, "Data/Figure_data/RR_sps_ints.csv", row.names = F)
+write.csv(int_coef, "Data/Figure_data/RR_sps_ints_rand.csv", row.names = F)
 
 # Format and save other ecological interpretation tables
 nbhd_inf <- as.data.frame(nbhd_inf)
@@ -196,29 +192,29 @@ nbhd_inf <- nbhd_inf %>%
   mutate(species = focal_sps) %>%
   rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
   select(species, train1, train2, train3, train4)
-write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf.csv", row.names = F)
-#write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf_rand.csv", row.names = F)
+#write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf.csv", row.names = F)
+write.csv(nbhd_inf, "Data/Figure_data/nbhd_inf_rand.csv", row.names = F)
 
 comp_id_inf <- as.data.frame(comp_id_inf)
 comp_id_inf <- comp_id_inf %>%
   mutate(species = focal_sps) %>%
   rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
   select(species, train1, train2, train3, train4)
-write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf.csv", row.names = F)
-#write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf_rand.csv", row.names = F)
+#write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf.csv", row.names = F)
+write.csv(comp_id_inf, "Data/Figure_data/comp_id_inf_rand.csv", row.names = F)
 
 inter_str <- as.data.frame(inter_str)
 inter_str <- inter_str %>%
   mutate(species = focal_sps) %>%
   rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
   select(species, train1, train2, train3, train4)
-write.csv(inter_str, "Data/Figure_data/inter_str.csv", row.names = F)
-#write.csv(inter_str, "Data/Figure_data/inter_str_rand.csv", row.names = F)
+#write.csv(inter_str, "Data/Figure_data/inter_str.csv", row.names = F)
+write.csv(inter_str, "Data/Figure_data/inter_str_rand.csv", row.names = F)
 
 intra_str <- as.data.frame(intra_str)
 intra_str <- intra_str %>%
   mutate(species = focal_sps) %>%
   rename(train1 = V1, train2 = V2, train3 = V3, train4 = V4) %>%
   select(species, train1, train2, train3, train4)
-write.csv(intra_str, "Data/Figure_data/intra_str.csv", row.names = F)
-#write.csv(intra_str, "Data/Figure_data/intra_str_rand.csv", row.names = F)
+#write.csv(intra_str, "Data/Figure_data/intra_str.csv", row.names = F)
+write.csv(intra_str, "Data/Figure_data/intra_str_rand.csv", row.names = F)
