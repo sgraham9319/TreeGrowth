@@ -326,3 +326,5 @@ for(sps in 1:length(focal_sps)){
   
 }
 
+# Save best model fit data
+write.csv(best_mod, "Data/Figure_data/lkhd_cv_r2.csv", row.names = F)
