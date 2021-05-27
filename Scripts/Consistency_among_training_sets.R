@@ -67,4 +67,4 @@ r2 <- read.csv("Figures/train_test_fit.csv", stringsAsFactors = F)
 r2_rand <- read.csv("Figures/train_test_fit_rand.csv", stringsAsFactors = F)
 r2_figure(r2, "train_test_fit")
 r2_figure(r2_rand, "train_test_fit_rand")
-
+r2_figure(r2_rand, "predict_fits", cv = T)

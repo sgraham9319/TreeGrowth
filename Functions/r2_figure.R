@@ -1,5 +1,10 @@
 
-r2_figure <- function(r2_table, name){
+r2_figure <- function(r2_table, name, cv = F){
+  
+  # Load cross-validated lkhd results if desired
+  if(cv){
+    lkhd_cv <- read.csv("Data/Figure_data/lkhd_cv_r2.csv")
+  }
   
   # Create empty data frame for formatted data
   plot_data <- data.frame(
@@ -68,6 +73,9 @@ r2_figure <- function(r2_table, name){
        col = test$cols, las = 1,
        ylim = c(min(min(test$min), 0), 0.9),
        yaxt = "n", xaxt = "n")
+  if(cv){
+    points(x = 1:6, y = lkhd_cv$test_r2, col = "green", pch = 19, cex = 0.7)
+  }
   axis(side = 2, at = seq(-0.8, 0.8, 0.4), labels = seq(-0.8, 0.8, 0.4),
        tck = -0.02, las = 1, cex.axis = 0.9, mgp = c(3, 0.5, 0))
   arrows(test$x, test$min, test$x, 
