@@ -237,6 +237,8 @@ quantify_lkhd_fit <- function(train_type = "regular"){
         comm_comp <- comm_comp[, sps[i]]
         sing_sp <- sing_sp %>%
           mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
+        ss_test <- ss_test %>%
+          mutate(sps_comp = if_else(sps_comp %in% comm_comp, sps_comp, "OTHR"))
         
         # Create vector of competitor species
         comps <- sort(unique(sing_sp$sps_comp))
