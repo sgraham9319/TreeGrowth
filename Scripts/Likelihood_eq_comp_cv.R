@@ -10,17 +10,18 @@ mse <- function(x){
   sum((x$observations - x$predictions) ^ 2) / nrow(x)
 }
 
-# Define focal species
+# Define focal species and training set
 focal_sps <- "TSME"
+set <- 2
 
 # Define number of folds for cross-validation
 nfolds <- 10
 
 # Load training data
-training <- read.csv("/gscratch/stf/sgraham3/data/rand_training1.csv",
-                     stringsAsFactors = F)
-#training <- read.csv("Data/Output_data/rand_training1.csv",
-#                     stringsAsFactors = F)
+training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+                           ".csv", sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("Data/Output_data/rand_training", set,
+#                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -135,5 +136,5 @@ optim_res_list <- mclapply(cv_par_list, opt_func)
 results <- bind_rows(optim_res_list)
 
 # Save results
-write.csv(results, paste("/gscratch/stf/sgraham3/output/eq_comp_cv_",
-                           focal_sps, ".csv", sep = ""), row.names = F)
+write.csv(results, paste("/gscratch/stf/sgraham3/output/eq_comp_cv", set, "_",
+                         focal_sps, ".csv", sep = ""), row.names = F)
