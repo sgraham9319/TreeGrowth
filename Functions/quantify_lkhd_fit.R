@@ -1,5 +1,5 @@
 
-quantify_lkhd_fit <- function(train_type = "regular"){
+quantify_lkhd_fit <- function(method = "AIC"){
   
   # Define AICc function
   AICc_calc <- function(k, NLL, n){
@@ -21,12 +21,11 @@ quantify_lkhd_fit <- function(train_type = "regular"){
                     ncol = 3)
   
   # Load model comparison table
-  if(train_type == "regular"){
-    lkhd_table <- read.csv("Figures/lkhd_model_selection.csv",
-                           stringsAsFactors = F)
-  } else if(train_type == "random"){
+  if(method == "AIC"){
     lkhd_table <- read.csv("Figures/lkhd_model_selection_rand_train.csv",
                            stringsAsFactors = F)
+  } else if(method == "cv"){
+    # NEED TO CREATE A CV LKHD TABLE FIRST!
   }
   
   # Create table of best model structure for each species/training set
@@ -35,26 +34,18 @@ quantify_lkhd_fit <- function(train_type = "regular"){
                                          1, which.min) + 2]) %>%
     select(focal_sps, training_set, str)
   
+  # Loop through training sets
   for(set in train_sets){
     
     # Load training data
-    if(train_type == "regular"){
-      training <- read.csv(paste("Data/Output_data/training", set,
+    training <- read.csv(paste("Data/Output_data/rand_training", set,
                                  ".csv", sep = ""), stringsAsFactors = F)
-    } else if(train_type == "random"){
-      training <- read.csv(paste("Data/Output_data/rand_training", set,
-                                 ".csv", sep = ""), stringsAsFactors = F)
-    }
     
     # Load test data
-    if(train_type == "regular"){
-      test <- read.csv(paste("Data/Output_data/test", set,
+    test <- read.csv(paste("Data/Output_data/rand_test", set,
                              ".csv", sep = ""), stringsAsFactors = F)
-    } else if(train_type == "random"){
-      test <- read.csv(paste("Data/Output_data/rand_test", set,
-                             ".csv", sep = ""), stringsAsFactors = F)
-    }
     
+    # Loop through focal species
     for(i in 1:length(sps)){
       
       # Subset to focal species and remove unneeded columns
@@ -102,14 +93,9 @@ quantify_lkhd_fit <- function(train_type = "regular"){
         filter(focal_sps == sps[i] & training_set == set) %>%
         pull(str)
       
-      # Load model output
-      if(train_type == "regular"){
-        output <- read.csv(paste("Data/Output_data/", mod, set, "_",
+      # Load model output and calculate AICc for each model
+      output <- read.csv(paste("Data/Output_data/", mod, "_rand", set, "_",
                                  sps[i], ".csv", sep = ""))
-      } else if(train_type == "random"){
-        output <- read.csv(paste("Data/Output_data/", mod, "_rand", set, "_",
-                                 sps[i], ".csv", sep = ""))
-      }
       
       # Calculate AICc for each model
       output$AICc <- AICc_calc(length(grep("_opt", names(output))),
