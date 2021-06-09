@@ -60,5 +60,4 @@ write.csv(r2_table, "Figures/all_train_test_fit.csv", row.names = F)
 
 # Make R2 figures
 r2_all <- read.csv("Figures/all_train_test_fit.csv", stringsAsFactors = F)
-r2_figure(r2_rand, "train_test_fit_rand")
-r2_figure(r2_rand, "predict_fits", cv = T)
+r2_figure(r2_all, "train_test_fit_all")
