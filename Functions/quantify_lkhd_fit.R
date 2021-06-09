@@ -1,5 +1,5 @@
 
-quantify_lkhd_fit <- function(method = "AIC"){
+quantify_lkhd_fit <- function(method = "AIC", num_train_sets = 4){
   
   # Define AICc function
   AICc_calc <- function(k, NLL, n){
@@ -14,7 +14,7 @@ quantify_lkhd_fit <- function(method = "AIC"){
   
   # Define focal species and training sets
   sps <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")
-  train_sets <- 1:4
+  train_sets <- 1:num_train_sets
   
   # Create output data frame
   results <- matrix(NA, nrow = length(sps) * length(train_sets),
@@ -25,7 +25,8 @@ quantify_lkhd_fit <- function(method = "AIC"){
     lkhd_table <- read.csv("Figures/lkhd_model_selection_rand_train.csv",
                            stringsAsFactors = F)
   } else if(method == "cv"){
-    # NEED TO CREATE A CV LKHD TABLE FIRST!
+    lkhd_table <- read.csv("Figures/lkhd_model_selection_cv.csv",
+                           stringsAsFactors = F)
   }
   
   # Create table of best model structure for each species/training set
@@ -93,7 +94,7 @@ quantify_lkhd_fit <- function(method = "AIC"){
         filter(focal_sps == sps[i] & training_set == set) %>%
         pull(str)
       
-      # Load model output and calculate AICc for each model
+      # Load model output
       output <- read.csv(paste("Data/Output_data/", mod, "_rand", set, "_",
                                  sps[i], ".csv", sep = ""))
       
@@ -458,11 +459,11 @@ quantify_lkhd_fit <- function(method = "AIC"){
                predictions = pred_grow)
       
       # Add coefficients of determination to results table
-      results[4 * (i - 1) + set, 2] <- coef_det(train_obs_pred)
-      results[4 * (i - 1) + set, 3] <- coef_det(test_obs_pred)
+      results[num_train_sets * (i - 1) + set, 2] <- coef_det(train_obs_pred)
+      results[num_train_sets * (i - 1) + set, 3] <- coef_det(test_obs_pred)
       
       # Add number of focal trees in training set to results table
-      results[4 * (i - 1) + set, 1] <- nrow(focals)
+      results[num_train_sets * (i - 1) + set, 1] <- nrow(focals)
       
     }
   }
