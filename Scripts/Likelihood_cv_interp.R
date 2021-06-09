@@ -21,7 +21,7 @@ mod_sel <- data.frame(
   mod_str = rep(model_str, times = length(focal_sps)),
   mse = NA
 )
-
+set <- 1
 # Loop through focal species
 for(sps in 1:length(focal_sps)){
   
@@ -29,8 +29,8 @@ for(sps in 1:length(focal_sps)){
   for(mod in 1:length(model_str)){
     
     # Load optimization results
-    results <- read.csv(paste("Data/Output_data/", model_str[mod], "_cv_",
-                              focal_sps[sps], ".csv", sep = ""))
+    results <- read.csv(paste("Data/Output_data/", model_str[mod], "_cv",
+                              set, "_", focal_sps[sps], ".csv", sep = ""))
     
     # Subset to best model for each cross-validation set
     results <- results %>%
@@ -50,7 +50,8 @@ best_mod <- mod_sel %>%
   group_by(species) %>%
   filter(row_number() == 1) %>%
   arrange(species) %>%
-  mutate(test_r2 = NA)
+  mutate(train_r2 = NA,
+         test_r2 = NA)
 
 
 #=====================
@@ -58,13 +59,15 @@ best_mod <- mod_sel %>%
 #=====================
 
 # Load training data
-training <- read.csv("Data/Output_data/rand_training1.csv")
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""))
 
 # Load test data
-test <- read.csv("Data/Output_data/rand_test1.csv")
+test <- read.csv(paste("Data/Output_data/rand_test", set, ".csv", sep = ""))
 
 # For testing, define species
-sps <- 4
+#sps <- 4
+
 for(sps in 1:length(focal_sps)){
   
   # Calculate number of focal trees in training set
@@ -72,7 +75,7 @@ for(sps in 1:length(focal_sps)){
     filter(species == focal_sps[sps])
   nfocals <- length(unique(sing_sp$tree_id))
   
-  # Subset test data to focal species and remove unneeded columns
+  # Subset training and test to focal species and remove unneeded columns
   ss_test <- test %>%
     arrange(tree_id) %>%
     filter(species == focal_sps[sps]) %>%
@@ -96,8 +99,8 @@ for(sps in 1:length(focal_sps)){
               pet_dm = pet_dm[1])
   
   # Load model output
-  output <- read.csv(paste("Data/Output_data/", best_mod$mod_str[sps], "_rand1_",
-                           focal_sps[sps], ".csv", sep = ""))
+  output <- read.csv(paste("Data/Output_data/", best_mod$mod_str[sps], "_rand",
+                           set, "_", focal_sps[sps], ".csv", sep = ""))
   
   # Calculate AICc for each model
   output$AICc <- AICc_calc(length(grep("_opt", names(output))),
