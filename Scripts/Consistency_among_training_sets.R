@@ -7,6 +7,11 @@ source("Functions/training_comparison.R")
 source("Functions/lkhd_model_selection.R")
 source("Functions/quantify_lkhd_fit.R")
 source("Functions/r2_figure.R")
+source("Functions/lkhd_fitted_params.R")
+
+# Create and save table of fitted parameter values for AIC likelihood
+lkhd_params <- lkhd_fitted_params()
+write.csv(lkhd_params, "Figures/lkhd_AIC_param_table.csv", row.names = F)
 
 # Calculate comparison
 comparison <- training_comparison(focal_sps = "TSME",
