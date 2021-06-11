@@ -2,37 +2,30 @@ library(dplyr)
 library(ggplot2)
 
 # Load plotting functions
-source("Functions/size_effect_comp.R")
-source("Functions/training_comparison.R")
 source("Functions/lkhd_model_selection.R")
 source("Functions/quantify_lkhd_fit.R")
 source("Functions/r2_figure.R")
 source("Functions/lkhd_fitted_params.R")
+source("Functions/nci.R")
+source("Functions/lkhd_fitted_effect_figure.R")
 
 # Create and save table of fitted parameter values for AIC likelihood
 lkhd_params <- lkhd_fitted_params()
 write.csv(lkhd_params, "Figures/lkhd_AIC_param_table.csv", row.names = F)
 
-# Calculate comparison
-comparison <- training_comparison(focal_sps = "TSME",
-                    model_strs = c("no_comp", "eq_comp", "int_comp", "ss_comp"),
-                    sets = 1:4, train_type = "random")
+# Create size effect comparison figure
+lkhd_fitted_effect_figure(effect = "size")
 
-# Plot comparison
-comparison$comp_plot
+# Create pet effect comparison figure
+lkhd_fitted_effect_figure(effect = "pet")
 
-# View all results
-View(comparison$best_models)
-
-# Create likelihood AIC model selection table
+# Create and save likelihood AIC model selection table
 lkhd_table_rand <- lkhd_model_select()
-
-# Create likelihood cv model selection table
-lkhd_table_cv <- lkhd_model_select(method = "cv", num_train_sets = 2)
-
-# Save model selection tables
 write.csv(lkhd_table_rand, "Figures/lkhd_model_selection_rand_train.csv",
           row.names = F)
+
+# Create and save likelihood cv model selection table
+lkhd_table_cv <- lkhd_model_select(method = "cv", num_train_sets = 2)
 write.csv(lkhd_table_cv, "Figures/lkhd_model_selection_cv.csv",
           row.names = F)
 
