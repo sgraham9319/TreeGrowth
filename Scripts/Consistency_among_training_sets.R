@@ -25,13 +25,13 @@ write.csv(lkhd_table_rand, "Figures/lkhd_model_selection_rand_train.csv",
           row.names = F)
 
 # Create and save likelihood cv model selection table
-lkhd_table_cv <- lkhd_model_select(method = "cv", num_train_sets = 2)
+lkhd_table_cv <- lkhd_model_select(method = "cv", num_train_sets = 4)
 write.csv(lkhd_table_cv, "Figures/lkhd_model_selection_cv.csv",
           row.names = F)
 
 # Calculate likelihood r2 values
 lkhd_r2_rand <- quantify_lkhd_fit()
-lkhd_r2_cv <- quantify_lkhd_fit(method = "cv", num_train_sets = 2)
+lkhd_r2_cv <- quantify_lkhd_fit(method = "cv", num_train_sets = 4)
 
 # Load regularized regression r2
 rr_r2_rand <- read.csv("Data/Figure_data/RR_r2_rand.csv")
