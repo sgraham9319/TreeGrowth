@@ -6,16 +6,16 @@ set <- 1
 focal_sps <- "TSHE"
 
 # Load common competitors data and extract for focal species
-#comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
-comm_comp <- read.csv("/gscratch/stf/sgraham3/data/common_comps.csv",
-                      stringsAsFactors = F)
+comm_comp <- read.csv("Data/Output_data/common_comps.csv", stringsAsFactors = F)
+#comm_comp <- read.csv("/gscratch/stf/sgraham3/data/common_comps.csv",
+#                      stringsAsFactors = F)
 comm_comp <- comm_comp[, focal_sps]
 
 # Load training data
-#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-#                     stringsAsFactors = F)
-training <- read.csv(paste("/gscratch/stf/sgraham3/data/training", set,
-                           ".csv", sep = ""), stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+#                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -174,7 +174,7 @@ starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
                              lmd9 = lmd9, sigma = sigma)
 starting_vals <- bind_rows(starting_vals, starting_vals, starting_vals)
 
-# Try optimizing one time for TSME - takes about 5 minutes
+# Try optimizing once - will take > 30 minutes
 #par <- as.vector(starting_vals[1,])
 #fit <- optim(par, ss_comp_NLL, method = "SANN")
 
@@ -209,5 +209,7 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 output <- cbind(starting_vals, optim_vals)
 
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/ss_comp",
+write.csv(output, paste("Data/Output_data/ss_comp",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
+#write.csv(output, paste("/gscratch/stf/sgraham3/output/ss_comp",
+#                        set, "_", focal_sps, ".csv", sep = ""), row.names = F)

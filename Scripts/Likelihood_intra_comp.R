@@ -6,10 +6,10 @@ set <- 1
 focal_sps <- "TSME"
 
 # Load training data
-#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-#                     stringsAsFactors = F)
-training <- read.csv(paste("/gscratch/stf/sgraham3/data/training", set,
-                           ".csv", sep = ""), stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+#                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -138,8 +138,8 @@ starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
 starting_vals <- bind_rows(starting_vals, starting_vals, starting_vals)
 
 # Try optimizing one time for TSME - takes about 5 minutes
-#par <- as.vector(starting_vals[1,])
-#fit <- optim(par, int_comp_NLL, method = "SANN")
+par <- as.vector(starting_vals[1,])
+fit <- optim(par, int_comp_NLL, method = "SANN")
 
 # Convert starting values data frame to list format
 start_vals <- split(starting_vals, 1:nrow(starting_vals))
@@ -170,5 +170,7 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 output <- cbind(starting_vals, optim_vals)
 
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/int_comp",
+write.csv(output, paste("Data/Output_data/int_comp",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
+#write.csv(output, paste("/gscratch/stf/sgraham3/output/int_comp",
+#                        set, "_", focal_sps, ".csv", sep = ""), row.names = F)

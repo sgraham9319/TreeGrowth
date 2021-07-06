@@ -6,10 +6,10 @@ set <- 1
 focal_sps <- "TSME"
 
 # Load training data
-#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-#                     stringsAsFactors = F)
-training <- read.csv(paste("/gscratch/stf/sgraham3/data/training", set,
-                           ".csv", sep = ""), stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+#                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -156,5 +156,7 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 output <- cbind(starting_vals, optim_vals)
 
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/eq_comp",
+write.csv(output, paste("Data/Output_data/eq_comp",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
+#write.csv(output, paste("/gscratch/stf/sgraham3/output/eq_comp",
+#                        set, "_", focal_sps, ".csv", sep = ""), row.names = F)

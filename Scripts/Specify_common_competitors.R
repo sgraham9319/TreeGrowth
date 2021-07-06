@@ -1,10 +1,10 @@
 library(tidyverse)
 
 # Load training sets
-train1 <- read.csv("Data/Output_data/training1.csv", stringsAsFactors = F)
-train2 <- read.csv("Data/Output_data/training2.csv", stringsAsFactors = F)
-train3 <- read.csv("Data/Output_data/training3.csv", stringsAsFactors = F)
-train4 <- read.csv("Data/Output_data/training4.csv", stringsAsFactors = F)
+train1 <- read.csv("Data/Output_data/rand_training1.csv", stringsAsFactors = F)
+train2 <- read.csv("Data/Output_data/rand_training2.csv", stringsAsFactors = F)
+train3 <- read.csv("Data/Output_data/rand_training3.csv", stringsAsFactors = F)
+train4 <- read.csv("Data/Output_data/rand_training4.csv", stringsAsFactors = F)
 
 # Create vector of species
 species <- c("ABAM", "CANO", "PSME", "THPL", "TSHE", "TSME")

@@ -6,10 +6,10 @@ set <- 1
 focal_sps <- "TSME"
 
 # Load training data
-#training <- read.csv(paste("Data/Output_data/training", set, ".csv", sep = ""),
-#                     stringsAsFactors = F)
-training <- read.csv(paste("/gscratch/stf/sgraham3/data/training", set,
-                           ".csv", sep = ""), stringsAsFactors = F)
+training <- read.csv(paste("Data/Output_data/rand_training", set, ".csv",
+                           sep = ""), stringsAsFactors = F)
+#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+#                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
 sing_sp <- training %>%
@@ -100,14 +100,14 @@ no_comp_NLL <- function(par){
 X0 <- c(5, 15, 25)
 Xb <- 2
 gmax <- 1
-pet_a <- c(2, 4)
-pet_b <- c(1, 2)
+pet_a <- 3
+pet_b <- 2
 sigma <- 5
 starting_vals <- expand.grid(X0 = X0, Xb = Xb, gmax = gmax, pet_a = pet_a,
                              pet_b = pet_b, sigma = sigma)
-starting_vals <- bind_rows(starting_vals, starting_vals)
+starting_vals <- bind_rows(starting_vals, starting_vals, starting_vals)
 
-# Try optimizing one time for TSME - takes about 7 minutes
+# Try optimizing one time for TSME - takes about 8 minutes
 #par <- as.vector(starting_vals[1,])
 #fit <- optim(par, no_comp_NLL, method = "SANN")
 
@@ -138,5 +138,7 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 output <- cbind(starting_vals, optim_vals)
 
 # Write results to csv
-write.csv(output, paste("/gscratch/stf/sgraham3/output/no_comp",
+write.csv(output, paste("Data/Output_data/no_comp",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
+#write.csv(output, paste("/gscratch/stf/sgraham3/output/no_comp",
+#                        set, "_", focal_sps, ".csv", sep = ""), row.names = F)
