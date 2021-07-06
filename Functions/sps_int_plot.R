@@ -181,7 +181,7 @@ sps_int_plot <- function(focal_sps, train_type){
   legend_image <- as.raster(matrix(colors, nrow = 1))
   rasterImage(legend_image, xleft = 0.25, ybottom = 0.25,
               xright = 0.75, ytop = 0.75)
-  mtext(text = c("Weak\nCompetitor", "Strong\nCompetitor"), side = 1,
+  mtext(text = c("Weak\nEffect", "Strong\nEffect"), side = 1,
         at = c(0.13, 0.87), line = -1, cex = 0.9)
   
   # Output plot
