@@ -156,7 +156,7 @@ names(optim_vals) <- c(paste(names(starting_vals), "_opt", sep = ""), "NLL")
 output <- cbind(starting_vals, optim_vals)
 
 # Write results to csv
-write.csv(output, paste("Data/Output_data/eq_comp",
+write.csv(output, paste("Data/Output_data/eq_comp_rand",
                         set, "_", focal_sps, ".csv", sep = ""), row.names = F)
-#write.csv(output, paste("/gscratch/stf/sgraham3/output/eq_comp",
+#write.csv(output, paste("/gscratch/stf/sgraham3/output/eq_comp_rand",
 #                        set, "_", focal_sps, ".csv", sep = ""), row.names = F)
