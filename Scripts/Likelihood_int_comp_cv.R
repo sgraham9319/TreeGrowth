@@ -2,8 +2,10 @@ library(dplyr)
 library(parallel)
 
 # Load required functions
-source("/gscratch/stf/sgraham3/Rscripts/lkhd_fitting_functions.R")
-source("/gscratch/stf/sgraham3/Rscripts/nci.R")
+source("Functions/lkhd_fitting_functions.R")
+source("Functions/nci.R")
+#source("/gscratch/stf/sgraham3/Rscripts/lkhd_fitting_functions.R")
+#source("/gscratch/stf/sgraham3/Rscripts/nci.R")
 
 # Create mean square error calculation function
 mse <- function(x){
@@ -12,15 +14,15 @@ mse <- function(x){
 
 # Define focal species and training set
 focal_sps <- "TSME"
-set <- 2
+set <- 1
 
 # Define number of folds for cross-validation
 nfolds <- 10
 
 # Load training data
-training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
+training <- read.csv(paste("Data/Output_data/rand_training", set,
                            ".csv", sep = ""), stringsAsFactors = F)
-#training <- read.csv(paste("Data/Output_data/rand_training", set,
+#training <- read.csv(paste("/gscratch/stf/sgraham3/data/rand_training", set,
 #                           ".csv", sep = ""), stringsAsFactors = F)
 
 # Subset to focal species and remove unneeded columns
@@ -132,6 +134,13 @@ opt_func <- function(cv_par){
   
 }
 
+# Try optimizing one time for TSME - takes about 4 minutes
+par_list_sub <- cv_par_list[[1]]
+system.time(
+  fit <- opt_func(par_list_sub)
+)
+fit <- opt_func(par_list_sub)
+
 # Run optimization with mclapply - this will not work on a Windows machine
 optim_res_list <- mclapply(cv_par_list, opt_func)
 
@@ -139,5 +148,7 @@ optim_res_list <- mclapply(cv_par_list, opt_func)
 results <- bind_rows(optim_res_list)
 
 # Save results
-write.csv(results, paste("/gscratch/stf/sgraham3/output/int_comp_cv", set, "_",
+write.csv(results, paste("Data/Output_data/int_comp_cv", set, "_",
                          focal_sps, ".csv", sep = ""), row.names = F)
+#write.csv(results, paste("/gscratch/stf/sgraham3/output/int_comp_cv", set, "_",
+#                         focal_sps, ".csv", sep = ""), row.names = F)
