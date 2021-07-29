@@ -30,7 +30,8 @@ r2_figure <- function(r2_table, name){
   # Add x coordinates and colors
   plot_data <- plot_data %>%
     mutate(x = rep(c(seq(1:6) - 0.2, seq(1:6), seq(1:6) + 0.2), times = 2),
-           cols = rep(rep(c("blue", "green", "red"), each = 6), times = 2))
+           cols = rep(rep(c("#009292", "#b66dff", "#db6d00"), each = 6),
+                      times = 2))
   
   # Separate training and test data
   training <- plot_data %>%
@@ -64,6 +65,8 @@ r2_figure <- function(r2_table, name){
          training$max, code = 3, angle = 90, length = 0, col = training$cols)
   abline(h = 0, lty = "dashed")
   text(x = 0.82, y = 0.78, label = "A")
+  legend(x = "topright", legend = c("AIC lkhd", "CV lkhd", "RR"),
+         col = c("#009292", "#b66dff", "#db6d00"), lty = 1, bty = "n", cex = 0.8)
   
   # Create test plot
   plot(test$x, test$mean, pch = 19, cex = 0.7,
