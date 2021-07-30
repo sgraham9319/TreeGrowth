@@ -96,6 +96,14 @@ sps_int_plot <- function(focal_sps, train_type){
     all_int <- c(all_int, lkhd_int[, i], rr_int[, i])
   }
   
+  # Flip sizes of interaction coefficients to represent focal growth
+  all_int <- 1 - all_int
+  
+  # Reorder so "other" is last
+  other_index <- which(comps == "OTHR")
+  other_coef <- (other_index * 8 - 7):(other_index * 8)
+  all_int <- c(all_int[-other_coef], all_int[other_coef])
+  
   #============
   # Making plot
   #============
@@ -128,6 +136,7 @@ sps_int_plot <- function(focal_sps, train_type){
   #colors <- paletteer_c(palette = "ggthemes::Red", n = n_colors)
   #colors <- paletteer_c(palette = "ggthemes::Temperature Diverging", n = n_colors)
   colors <- paletteer_c(palette = "pals::coolwarm", n = n_colors)
+  # TO CHANGE PALETTE DIRECTION INCLUDE: direction = -1
   #colors <- paletteer_c(palette = "oompaBase::redscale", n = n_colors)
   #colors <- paletteer_c(palette = "harrypotter::ronweasley", n = n_colors)
   
@@ -154,7 +163,7 @@ sps_int_plot <- function(focal_sps, train_type){
   }
   
   # Change plot margins
-  par(mar = c(2, 2, 0, 2))
+  par(mar = c(2, 2.5, 0, 2))
   
   # Create space for legend
   layout(matrix(1:2, nrow = 2), width = c(1, 1), height = c(5, 1))
@@ -165,24 +174,29 @@ sps_int_plot <- function(focal_sps, train_type){
   # Add rectangles
   rect(x_left, y_bottom, x_right, y_top, col = colors[rank[0:length(all_int)]])
   
+  # Reorder comps and av_ints so "other" is at the bottom
+  new_comps <- c(comps[-other_index], "OTHER")
+  new_av_ints <- c(av_ints[-other_index], av_ints[other_index])
+  
   # Add axis labels
   mtext(text = 1:4, side = 1, at = seq(0.125, 0.875, 0.25), line = -0.2)
   mtext(text = "Training set", side = 1, line = 1)
-  mtext(text = comps, side = 2,
+  mtext(text = new_comps, side = 2,
         at = rev(seq(rect_ht, block * length(comps) - (rect_ht + separator),
                      block)), las = 1, cex = 0.8)
-  mtext(text = av_ints, side = 4,
+  mtext(text = new_av_ints, side = 4,
         at = rev(seq(rect_ht, block * length(comps) - (rect_ht + separator),
                      block)), las = 1, cex = 0.8)
   
   # Create and add legend
-  par(mar = c(1, 2, 0, 2))
+  par(mar = c(1, 2.5, 0, 2))
   plot.new()
   legend_image <- as.raster(matrix(colors, nrow = 1))
   rasterImage(legend_image, xleft = 0.25, ybottom = 0.25,
               xright = 0.75, ytop = 0.75)
-  mtext(text = c("Weak\nEffect", "Strong\nEffect"), side = 1,
-        at = c(0.13, 0.87), line = -1, cex = 0.9)
+  mtext(text = c(paste("Low", focal_sps, "Growth", sep = "\n"),
+                 paste("High", focal_sps, "Growth", sep = "\n")),
+        side = 1, at = c(0.13, 0.87), line = -0.4, cex = 0.9)
   
   # Output plot
   dev.off()
