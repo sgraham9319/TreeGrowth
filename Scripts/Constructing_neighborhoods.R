@@ -25,7 +25,7 @@ nb_rad <- 15
 neighbors <- neighborhoods(mapping = mapping, radius = nb_rad)
 
 # Calculate densities
-nbhd_summ <- neighborhood_summary(neighbors, radius = 15)
+nbhd_summ <- neighborhood_summary(neighbors, id_column = "tree_id", radius = 15)
 
 # Join neighborhoods and densities
 neighbors <- neighbors %>%
