@@ -68,7 +68,7 @@ for(set in train_sets){
     
     # Subset to focal species
     sing_sp <- train %>%
-      filter(species == focal_sps[i])
+      filter(species == focal_sps[i]) # REMOVE SPECIES COL
     ss_test <- test %>%
       filter(species == focal_sps[i])
     
@@ -96,7 +96,7 @@ for(set in train_sets){
     
     # Run regularized regression model
     set.seed(100)
-    mod <- growth_model(sing_sp, "size_corr_growth", focal_sps[i],
+    mod <- growth_model(sing_sp, "size_corr_growth", focal_sps[i], # REMOVE FOCAL SPECIES ARGUMENT
                         iterations = 100, test = ss_test)
     
     # Store training R squared value
