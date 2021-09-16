@@ -101,6 +101,7 @@ ss_comp_cv_TSME.R | 153-154 | 1-154 | 4 minutes
 ### 6. Create figures and tables
 
 To recreate the figures and tables included in the manuscript, please run the
-scripts "Scripts/Tables_figures_modeling_and_prediction.R" and 
+scripts "Scripts/Tables_figures_species_summary.R",
+"Scripts/Tables_figures_modeling_and_prediction.R" and 
 "Scripts/Tables_figures_inference.R". These scripts call a number of function
 files, which can be found in "Functions/"
