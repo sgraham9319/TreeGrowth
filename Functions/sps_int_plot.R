@@ -179,6 +179,9 @@ sps_int_plot <- function(focal_sps, train_type){
   new_comps <- c(comps[-other_index], "OTHER")
   new_av_ints <- c(av_ints[-other_index], av_ints[other_index])
   
+  # Add commas to large numbers
+  new_av_ints <- formatC(new_av_ints, format="d", big.mark=",")
+  
   # Add axis labels
   mtext(text = 1:4, side = 1, at = seq(0.125, 0.875, 0.25), line = -0.2,
         cex = 2.5)
@@ -186,7 +189,7 @@ sps_int_plot <- function(focal_sps, train_type){
   mtext(text = new_comps, side = 2, line = -0.8,
         at = rev(seq(rect_ht, block * length(comps) - (rect_ht + separator),
                      block)), las = 1, cex = 2)
-  mtext(text = new_av_ints, side = 4, line = -0.8,
+  mtext(text = new_av_ints, side = 4, line = -1.1,
         at = rev(seq(rect_ht, block * length(comps) - (rect_ht + separator),
                      block)), las = 1, cex = 2)
   
