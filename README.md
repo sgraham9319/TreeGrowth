@@ -20,10 +20,11 @@ R packages installed on your system:
 
 * tidyverse
 * paletteer
-* ForestPlot
+* ForestPlotR
 
-*Note: the ForestPlot package is not available on CRAN and must be downloaded
-from GitHub at:* https://github.com/sgraham9319/ForestPlot
+*Note: the ForestPlotR package is not available on CRAN and must be downloaded
+from GitHub. Also, this analysis was conducted with v0.1.0 of ForestPlotR.
+Install with "devtools::install_github("sgraham9319/ForestPlotR@v0.1.0")
 
 ### Contents
 
